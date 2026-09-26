@@ -52,7 +52,7 @@ function methodGlyph(i) {
     path('M30 -24 L52 0 L30 24 L8 0 Z', { stroke: c, sw: 5 })].join('');
   return G({ x: -14, y: 6, r: -8, s: 0.34 }, docCard({ w: 200, h: 240, seed: 91, lines: 5 })) + G({ x: 14, y: -4, r: 6, s: 0.34 }, docCard({ w: 200, h: 240, seed: 92, lines: 5 }));
 }
-// st: { boxIn[4], arrow[3], lab[4], rules, hl[4], badge[4] }
+// st: { boxIn[4], arrow[3], lab[4], hl[4], badge[4] } — box entrances, arrows, label typing, highlight pulse, badges still attached
 function methodChart(t, st) {
   const out = [shadowCard(-650, -215, 1300, 430, { rx: 24 })];
   out.push(T('METHOD', -606, -146, { size: 36, weight: 800, fill: C.blue, ls: 8 }));
@@ -112,8 +112,8 @@ SCENES.method = {
     if (fold < 1) out.push(G({ x: cx + shake, y: cy + eC.y, sx: cs * eC.s * lerp(1, 0.1, fold), sy: cs * eC.s, o: eC.o * (1 - 0.35 * stampP) * (1 - fold) }, methodChart(t, st)));
     // "a set of work rules", under the chart until it moves aside
     const eW = enter(t, wr - 0.25, { dy: 10 });
-    if (eW.o > 0) out.push(G({ o: eW.o * (1 - P(t, l1 - 0.7, 0.35)), y: eW.y }, hand('a set of work rules', 960, 850, { size: 54, fill: C.ink2 }),
-      underline(960 - 190, 872, 380, P(t, wr + 0.1, 0.5, 'inOut'), { color: C.blue, sw: 5 })));
+    if (eW.o > 0) out.push(G({ o: eW.o * (1 - P(t, l1 - 0.7, 0.35)), y: eW.y }, hand('a set of work rules', 960, 850, { size: 50, fill: C.ink2 }),
+      underline(960 - 175, 872, 350, P(t, wr + 0.1, 0.5, 'inOut'), { color: C.blue, sw: 5 })));
     // the theory: a night orb with a slowly turning constellation
     const OX = 1400, OY = 540, OR = 280;
     const Kc = once('method_K', () => makeConstellation(29, 14, { rx: 200, ry: 185, minD: 80, extra: 0.4 }));
@@ -134,7 +134,7 @@ SCENES.method = {
         G({ r: rot }, constellation(t, Kc, { t0: l1 - 0.05, dur: 0.6, size: 8, lineW: 2.8, glow: glowUp })),
       ]));
       const eL = enter(t, no - 0.2, { dy: 10 });
-      if (eL.o > 0) out.push(G({ o: eL.o * (1 - P(t, nr - 0.4, 0.4)), y: eL.y }, hand('no inherent parts or order', OX, OY + OR + 78, { fill: C.goldDeep, size: 50 })));
+      if (eL.o > 0) out.push(G({ o: eL.o * (1 - P(t, nr - 0.4, 0.4)), y: eL.y }, hand('no inherent parts or order', OX, OY + OR + 76, { fill: C.goldDeep, size: 48 })));
     }
     // the number badges fly onto the theory's nodes, and slide off
     [0, 1, 2, 3].forEach(i => {
@@ -173,7 +173,7 @@ SCENES.method = {
       out.push(G({ x: bx, y: by + bob, s: lerp(0.3, 1, bookIn), r: lerp(-10, -3, toHands), o: clamp(bookIn * 3) }, book({ title: 'METHODS', w: 170, h: 212, color: C.blue, size: 22 })));
     }
     const eE = enter(t, ed - 0.1, { dy: 10 });
-    if (eE.o > 0) out.push(G({ o: eE.o, y: eE.y }, hand('useful as education', 820, 770, { fill: C.tealDark, size: 52 }), G({ x: 820, y: 832 }, tickBadge(P(t, ed + 0.2, 0.5)))));
+    if (eE.o > 0) out.push(G({ o: eE.o, y: eE.y }, hand('useful as education', 820, 770, { fill: C.tealDark, size: 48 }), G({ x: 820, y: 832 }, tickBadge(P(t, ed + 0.2, 0.5)))));
     return G({ o: X.o, y: X.y }, out);
   },
   sfx(S) {
@@ -275,8 +275,8 @@ SCENES.status = {
       const eL = enter(t, cmp - 0.15, { dy: 12 });
       if (eL.o > 0) {
         const lx = 960, ly = 380;
-        const w = measure('replaceable component?', 58, 'hand', 700);
-        A.push(G({ o: eL.o, y: eL.y }, hand('replaceable component?', lx, ly, { size: 58, fill: C.ink })));
+        const w = measure('replaceable component?', 52, 'hand', 700);
+        A.push(G({ o: eL.o, y: eL.y }, hand('replaceable component?', lx, ly, { size: 52, fill: C.ink })));
         A.push(drawPath(`M${lx - w / 2 - 14} ${ly - 14} C${lx - w / 6} ${ly - 26} ${lx + w / 6} ${ly - 4} ${lx + w / 2 + 16} ${ly - 20}`, P(t, wLine - 0.3, 0.4, 'inOut'), { stroke: C.coral, sw: 8 }));
       }
       out.push(G({ o: pA.o * eB.o, y: pA.y + eB.y }, A));
@@ -323,7 +323,7 @@ SCENES.status = {
         bubble: P(t, resp - 0.1, 0.6) * (1 - mvC), theory: { seed: 21, n: 10, w: 250, h: 170, t0: resp + 0.05, dur: 1.2 },
       }), lap > 0 ? G({ y: -112, s: 0.55, o: lap }, laptopFront(t, { w: 150, h: 96, inner: [0, 1, 2].map(k => rect(-50, -80 + k * 16, 28 + ((k * 31 + Math.floor(t * 6)) % 50), 7, { rx: 3.5, fill: [C.plumLight, C.tealLight, C.goldLight][k] })).join('') })) : ''));
       const eR = enter(t, resp + 0.35, { dy: 10 });
-      if (eR.o > 0) out.push(G({ o: eR.o * pB.o, y: eR.y }, hand('responsible, permanent developer', 960, 965, { fill: C.goldDeep, size: 50 })));
+      if (eR.o > 0) out.push(G({ o: eR.o * pB.o, y: eR.y }, hand('responsible, permanent developer', 960, 965, { fill: C.goldDeep, size: 48 })));
     }
     // ---- phase C: the same standing as engineers and lawyers
     const plin = enter(t, sd - 0.35, { dy: 20 });
@@ -344,7 +344,7 @@ SCENES.status = {
         if (p > 0) out.push(G({ x: ex, y: 610, s: p, o: clamp(p * 2) }, circle(0, 0, 32, { fill: C.card, stroke: C.goldDeep, sw: 3.5 }), T('=', 0, 14, { size: 42, weight: 800, fill: C.goldDeep, anchor: 'middle' })));
       });
       const eS = enter(t, sd - 0.15, { dy: 10 });
-      if (eS.o > 0) out.push(G({ o: eS.o, y: eS.y }, hand('the same standing', 960, 972, { fill: C.goldDeep, size: 54 })));
+      if (eS.o > 0) out.push(G({ o: eS.o, y: eS.y }, hand('the same standing', 960, 972, { fill: C.goldDeep, size: 50 })));
     }
     return G({ o: X.o, y: X.y }, out);
   },
@@ -480,7 +480,7 @@ SCENES.agents = {
         const sw = 28 * Math.exp(-3 * lt) * Math.sin(lt * 9);
         Q.push(G({ x: 1010, y: 268, r: 26 + sw, o: tagP * dimCode }, line(0, 0, -12, 0, { stroke: C.ink2, sw: 2 }), priceTag('$0.00', { w: 160 })));
         const lab = enter(t, free + 0.3, { dy: 10 });
-        if (lab.o > 0) Q.push(G({ o: lab.o, y: lab.y }, hand('text ≈ free', 860, 668, { size: 54, fill: C.ink2 })));
+        if (lab.o > 0) Q.push(G({ o: lab.o, y: lab.y }, hand('text ≈ free', 860, 668, { size: 52, fill: C.ink2 })));
       }
       // the specifying station
       const stX = 1480;
@@ -596,11 +596,11 @@ SCENES.agents = {
         // labels
         const eR = enter(t, revival - 0.15, { dy: 10 });
         if (eR.o > 0) {
-          const w = measure('revival', 64, 'hand', 700);
-          Q.push(G({ o: eR.o, y: eR.y }, hand('revival', BX - 40, 790, { size: 64, fill: C.coralDark }), G({ x: BX - 40 + w / 2 + 62, y: 772 }, pill('Naur', { size: 18 }))));
+          const w = measure('revival', 56, 'hand', 700);
+          Q.push(G({ o: eR.o, y: eR.y }, hand('revival', BX - 40, 790, { size: 56, fill: C.coralDark }), G({ x: BX - 40 + w / 2 + 58, y: 774 }, pill('Naur', { size: 18 }))));
         }
         const eDf = enter(t, differs - 0.1, { dy: 10 });
-        if (eDf.o > 0) Q.push(G({ o: eDf.o, y: eDf.y }, richText([{ t: 'its picture', fill: C.coralDark }, { t: '  ≠  ', fill: C.ink2 }, { t: 'the original', fill: C.goldDeep }], BX, 870, { font: 'hand', size: 50, weight: 700, anchor: 'middle' })));
+        if (eDf.o > 0) Q.push(G({ o: eDf.o, y: eDf.y }, richText([{ t: 'its picture', fill: C.coralDark }, { t: '  ≠  ', fill: C.ink2 }, { t: 'the original', fill: C.goldDeep }], BX, 870, { font: 'hand', size: 46, weight: 700, anchor: 'middle' })));
       }
       out.push(G({ o: e2 * p2.o, y: p2.y }, Q));
     }
