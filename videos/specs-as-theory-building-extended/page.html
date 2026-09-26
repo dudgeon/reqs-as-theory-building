@@ -5,7 +5,7 @@
   Everything else here is hand-written content for this video: edit it freely for the next one.
   Plain HTML on purpose: no templating language, so CSS/JS braces need no escaping.
 -->
-<title>Specs as Theory Building: Extended Cut</title>
+<title>Specs as Theory Building, Extended Cut</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&display=swap">
@@ -186,7 +186,7 @@
 <main>
   <div class="wide player">
     <div class="frame">
-      <video id="film" controls playsinline preload="metadata" poster="poster.jpg" aria-label="Specs as Theory Building, extended cut">
+      <video id="film" controls playsinline preload="none" poster="poster.jpg" aria-label="Specs as Theory Building, extended cut">
         <source src="{{VIDEO}}" type="video/mp4">
       </video>
       <div class="cc" id="cc" hidden></div>
@@ -321,18 +321,31 @@
   const loading = document.getElementById('loading');
 
   // The web encode is split into parts under the host's file-size limit. Stream them back into one
-  // timeline with Media Source Extensions; where that's missing, download them all and join them.
+  // timeline with Media Source Extensions. The plain <source> is a small single-file 540p version,
+  // used wherever streaming isn't available or fails.
   if (PARTS && PARTS.parts.length > 1) {
     const MS = window.ManagedMediaSource || window.MediaSource;
     const show = msg => { loading.hidden = !msg; loading.textContent = msg || ''; };
     const fetchPart = p => fetch(p).then(r => { if (!r.ok) throw new Error(p + ': ' + r.status); return r.arrayBuffer(); });
-    film.removeAttribute('src');
-    film.querySelectorAll('source').forEach(s => s.remove());
+    const lite = () => {
+      if (film.dataset.lite) return;
+      film.dataset.lite = '1';
+      show('');
+      film.src = PARTS.fallback;
+      film.load();
+    };
     if (MS && MS.isTypeSupported(PARTS.mime)) {
       const ms = new MS();
+      let opened = false;
+      const timer = setTimeout(() => { if (!opened) lite(); }, 5000);
+      film.addEventListener('error', () => { if (!film.dataset.lite) lite(); }, { once: true });
+      film.querySelectorAll('source').forEach(s => s.remove());
+      film.preload = 'auto';
       film.disableRemotePlayback = true;
       film.src = URL.createObjectURL(ms);
       ms.addEventListener('sourceopen', async () => {
+        opened = true;
+        clearTimeout(timer);
         try {
           const sb = ms.addSourceBuffer(PARTS.mime);
           const append = buf => new Promise((res, rej) => {
@@ -341,6 +354,7 @@
             sb.appendBuffer(buf);
           });
           for (let i = 0; i < PARTS.parts.length; i++) {
+            if (film.dataset.lite) return;
             show(i ? 'loading ' + Math.round(100 * i / PARTS.parts.length) + '%' : 'loading…');
             await append(await fetchPart(PARTS.parts[i]));
             if (i === 0 && !sb.updating) ms.duration = PARTS.duration;
@@ -348,13 +362,10 @@
           }
           show('');
           if (ms.readyState === 'open' && !sb.updating) ms.endOfStream();
-        } catch (e) { show('Video failed to load: ' + e.message); }
+        } catch (e) { lite(); }
       }, { once: true });
     } else {
-      show('loading…');
-      Promise.all(PARTS.parts.map(fetchPart))
-        .then(bufs => { film.src = URL.createObjectURL(new Blob(bufs, { type: 'video/mp4' })); show(''); })
-        .catch(e => show('Video failed to load: ' + e.message));
+      film.preload = 'metadata';
     }
   }
 

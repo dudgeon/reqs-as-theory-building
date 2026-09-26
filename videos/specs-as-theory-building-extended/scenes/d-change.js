@@ -625,6 +625,13 @@ SCENES.life = {
     const out = [];
     const mx = 1330, my = 650;
     const eM = enter(t, S.start + 0.02, { d: 0.6, dy: 26 });
+    // headline: life, then death
+    const tSwap = c.dies - 0.1;
+    const eH1 = enter(t, S.start + 0.02, { dy: 12 });
+    const o1 = eH1.o * (1 - P(t, tSwap - 0.35, 0.35));
+    if (o1 > 0) out.push(G({ o: o1, y: eH1.y }, richText([{ t: 'A program ' }, { t: 'lives', fill: C.tealDark }, { t: ' while its team holds the theory' }], 960, 150, { font: 'serif', size: 54, weight: 600, anchor: 'middle' })));
+    const eH2 = enter(t, tSwap - 0.05, { dy: 12 });
+    if (eH2.o > 0) out.push(G({ o: eH2.o, y: eH2.y }, richText([{ t: 'It ' }, { t: 'dies', fill: C.coral }, { t: ' when the team dissolves' }], 960, 150, { font: 'serif', size: 54, weight: 600, anchor: 'middle' })));
     // heartbeat monitor above the program
     const alive = 1 - P(t, c.dissolves - 0.1, 0.7, 'inOut');
     const beatGlow = alive * P(t, c.alive - 0.3, 0.4);

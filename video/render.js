@@ -62,7 +62,7 @@ async function shot(page, t, file) {
       const page = await openPage(browser, port);
       const ev = await page.evaluate(() => window.collectSfx());
       fs.writeFileSync(path.join(BUILD, 'sfx.json'), JSON.stringify(ev, null, 1));
-      console.log(`${ev.length} sfx events -> build/sfx.json`);
+      console.log(`${ev.length} sfx events -> ${path.relative(ROOT, path.join(BUILD, 'sfx.json'))}`);
     }
     if (opt('--stills')) {
       const times = String(opt('--stills')).split(',').map(Number);
@@ -92,7 +92,7 @@ async function shot(page, t, file) {
           if (++done % 150 === 0) console.log(`  ${done}/${n} frames (${((Date.now() - t0) / 1000).toFixed(0)}s)`);
         }
       }));
-      console.log(`${n} frames -> build/frames (${((Date.now() - t0) / 1000).toFixed(0)}s)`);
+      console.log(`${n} frames -> ${path.relative(ROOT, dir)} (${((Date.now() - t0) / 1000).toFixed(0)}s)`);
     }
   } finally {
     await browser.close();

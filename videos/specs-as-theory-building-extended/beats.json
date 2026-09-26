@@ -1,0 +1,272 @@
+[
+ {
+  "scene": "title",
+  "at": "start",
+  "offset": 1.3,
+  "caption": "Naur's title is struck out: *Programming* becomes **Specs**."
+ },
+ {
+  "scene": "title",
+  "at": "start",
+  "offset": 3.2,
+  "caption": "Title card: *Specs as Theory Building*, the extended cut."
+ },
+ {
+  "scene": "hook",
+  "at": "pile",
+  "offset": 0.35,
+  "caption": "\"What does a software team *actually* produce?\" The team's printouts pile up. *The product?*"
+ },
+ {
+  "scene": "hook",
+  "at": "notcode",
+  "offset": 0.9,
+  "caption": "Naur's 1985 answer: **not the code.** The stack is crossed out and sparks rise over the team."
+ },
+ {
+  "scene": "naur",
+  "at": "turing",
+  "offset": 1.0,
+  "caption": "Peter Naur: editor of the **ALGOL 60** report, the **N in BNF**, **Turing Award** 2005."
+ },
+ {
+  "scene": "naur",
+  "at": "slow",
+  "offset": 1.3,
+  "caption": "The essay's own sections, read slowly. The chapters of this cut follow them."
+ },
+ {
+  "scene": "views",
+  "at": "texts",
+  "offset": 1.2,
+  "caption": "The **production view**: programming produces a program and some other texts."
+ },
+ {
+  "scene": "views",
+  "at": "second",
+  "offset": 1.2,
+  "caption": "The **theory building view**: programmers form a theory; the texts are *secondary*."
+ },
+ {
+  "scene": "matching",
+  "at": "symbols",
+  "offset": 1.0,
+  "caption": "Programming **matches** part of a real-world activity to symbol manipulation."
+ },
+ {
+  "scene": "matching",
+  "at": "mods",
+  "offset": 1.4,
+  "caption": "The world changes, so programming includes **modification** to keep the match."
+ },
+ {
+  "scene": "compiler",
+  "at": "advice",
+  "offset": 1.2,
+  "caption": "Case 1: group B gets the compiler with full documentation, annotated code and **advice**."
+ },
+ {
+  "scene": "compiler",
+  "at": "spotted",
+  "offset": 1.2,
+  "caption": "B's proposals are patches that would destroy the design; group A **spots them instantly**."
+ },
+ {
+  "scene": "compiler",
+  "at": "amorphous",
+  "offset": 1.8,
+  "caption": "Ten years on, without A: the structure is still visible but **made ineffective** by amorphous additions."
+ },
+ {
+  "scene": "monitor",
+  "at": "fromknow",
+  "offset": 1.6,
+  "caption": "Case 2: the veterans fix faults from **what they know** and the annotated code."
+ },
+ {
+  "scene": "monitor",
+  "at": "easy",
+  "offset": 1.2,
+  "caption": "Teams with full manuals get stuck; a veteran **clears it up easily**."
+ },
+ {
+  "scene": "ryle",
+  "at": "lapses",
+  "offset": 1.0,
+  "caption": "Gilbert Ryle: intelligent behaviour means **doing things well** and **catching your own lapses**."
+ },
+ {
+  "scene": "ryle",
+  "at": "regress",
+  "offset": 0.6,
+  "caption": "Not rule-following: rules for applying the rules would **regress forever**."
+ },
+ {
+  "scene": "ryle",
+  "at": "argue",
+  "offset": 0.9,
+  "caption": "Having a **theory** goes further: explain, answer questions, argue."
+ },
+ {
+  "scene": "newton",
+  "at": "similar",
+  "offset": 1.4,
+  "caption": "Newton's theory means seeing it in **pendulums and planets**, and recognizing **similar cases**."
+ },
+ {
+  "scene": "newton",
+  "at": "cantwrite",
+  "offset": 0.75,
+  "caption": "Similarity can't be put into rules, so **a theory can't be fully written down**."
+ },
+ {
+  "scene": "abilities",
+  "at": "relevant",
+  "offset": 1.3,
+  "caption": "What the theory makes possible, 1: **map** each part to the world, including which parts matter."
+ },
+ {
+  "scene": "abilities",
+  "at": "similarity",
+  "offset": 1.3,
+  "caption": "2 **justify** and 3 **adapt**: meet a change by seeing how it resembles what's there."
+ },
+ {
+  "scene": "cost",
+  "at": "notcost",
+  "offset": 1.2,
+  "caption": "Cheap to edit, so cheap to change? Naur: **false**. Text was never the main cost."
+ },
+ {
+  "scene": "cost",
+  "at": "futures",
+  "offset": 1.4,
+  "caption": "Renovating can cost more than rebuilding, and **flexibility costs now** for needs that may never come."
+ },
+ {
+  "scene": "decay",
+  "at": "onlyholder",
+  "offset": 1.4,
+  "caption": "Many ways, all correct: some **extend the theory**, others are **patches**, and only a theory-holder can tell."
+ },
+ {
+  "scene": "decay",
+  "at": "possible",
+  "offset": 1.6,
+  "caption": "Simplicity and good structure make sense only against the programs that **could have been written**."
+ },
+ {
+  "scene": "life",
+  "at": "control",
+  "offset": 1.2,
+  "caption": "A program is **alive** while a team holding its theory controls its changes."
+ },
+ {
+  "scene": "life",
+  "at": "visibledeath",
+  "offset": 1.8,
+  "caption": "The team dissolves: the program **dies**, keeps running, and requests go unanswered."
+ },
+ {
+  "scene": "revival",
+  "at": "impossible",
+  "offset": 1.0,
+  "caption": "Rebuilding the theory from code and documents alone: **strictly impossible**."
+ },
+ {
+  "scene": "revival",
+  "at": "alongside",
+  "offset": 1.2,
+  "caption": "A theory is passed on like music: by **working closely** with people who have it."
+ },
+ {
+  "scene": "method",
+  "at": "noorder",
+  "offset": 1.4,
+  "caption": "A method is work rules, but a theory has **no inherent parts or order**."
+ },
+ {
+  "scene": "method",
+  "at": "educate",
+  "offset": 1.0,
+  "caption": "**No right method**; methods help as education."
+ },
+ {
+  "scene": "status",
+  "at": "standing",
+  "offset": 1.0,
+  "caption": "Not replaceable parts: **responsible, permanent developers**, with the standing of engineers and lawyers."
+ },
+ {
+  "scene": "agents",
+  "at": "tospec",
+  "offset": 1.0,
+  "caption": "Agents make text nearly free. The cost **moves to specifying**."
+ },
+ {
+  "scene": "agents",
+  "at": "differs",
+  "offset": 1.6,
+  "caption": "An agent in a codebase is attempting **revival**: its picture differs from the original."
+ },
+ {
+  "scene": "agents",
+  "at": "keep",
+  "offset": 0.8,
+  "caption": "The spec is the handoff. The agent **gets the spec**; **you keep the theory**."
+ },
+ {
+  "scene": "enterprise",
+  "at": "rgtb",
+  "offset": 1.1,
+  "caption": "In a regulated enterprise the theory is scattered. **Requirements gathering is theory building.**"
+ },
+ {
+  "scene": "scratch",
+  "at": "longer",
+  "offset": 1.2,
+  "caption": "Starting each spec from scratch, every team rediscovers the **same rules, quirks and owners**."
+ },
+ {
+  "scene": "loop",
+  "at": "governed",
+  "offset": 0.8,
+  "caption": "The loop: discover, verify, specify, build, learn, then **write back governed facts**."
+ },
+ {
+  "scene": "governed",
+  "at": "decision",
+  "offset": 1.2,
+  "caption": "A governed fact: **source, owner, date, verified or assumed**. Decisions keep their reasons."
+ },
+ {
+  "scene": "compound",
+  "at": "shared",
+  "offset": 1.4,
+  "caption": "The next loop **starts from those facts**: adjacent work inherits them; unrelated work reuses shared rules, platforms and people."
+ },
+ {
+  "scene": "compound",
+  "at": "impact",
+  "offset": 1.4,
+  "caption": "Fewer unknowns, faster loops, and when a rule changes, **every spec that relied on it** lights up."
+ },
+ {
+  "scene": "naurloop",
+  "at": "alivelong",
+  "offset": 1.0,
+  "caption": "With Naur, not around him: facts are what the theory is built on, and its **holders stay in the loop**."
+ },
+ {
+  "scene": "takeaways",
+  "at": "t5",
+  "offset": 2.0,
+  "caption": "**Five habits** for PMs writing specs."
+ },
+ {
+  "scene": "close",
+  "at": "c4",
+  "offset": 1.2,
+  "caption": "Code is the output. The spec is the handoff. **Governed facts are the memory. The theory is the product.**"
+ }
+]

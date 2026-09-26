@@ -276,9 +276,10 @@ It is both the design and the brief for the scene builders. See the extended cut
 **Music.** A long bed needs movement. `mix.py` follows the chapter list: it changes the chord progression at each chapter and adds a soft swell as each chapter starts.
 
 **Sizes.**
-- Frames: about 11,000 JPEGs, about 3 GB for 6 min.
-- Master MP4 at CRF 18: roughly 4× the short cut. `encode.py` takes `CRF=…` if it needs to be smaller; GitHub rejects files over 100 MB.
-- The page's web encode is split into parts under the 15 MB artifact limit.
+- Frames: 10,951 JPEGs and 3.0 GB for 6 min 5 s, rendered in about 6 minutes.
+- Master MP4 at CRF 18: 82 MB. `encode.py` takes `CRF=…` if it needs to be smaller; GitHub rejects files over 100 MB.
+- The page's web encode is split into parts under the 15 MB artifact limit (four parts for 6 min) and streamed back together. A 540p single file of about 11 MB is the fallback. The published page is about 57 MB, under the 64 MB per-publish limit.
+- Web encodes carry only video and audio (`-map_chapters -1`): a chapter data track in the stream can make Media Source Extensions reject it.
 
 ---
 

@@ -10,7 +10,8 @@ tool, passing the supporting files this script prints.
 Artifact files are capped at 15 MB each. A web encode bigger than that is re-encoded as fragmented
 MP4 and cut at fragment boundaries into <slug>-partN.mp4 files; the template's {{VIDEO_PARTS}}
 placeholder gets their names, MIME type and duration, and the page streams them back into one
-timeline with Media Source Extensions (or joins them into one blob where MSE is missing).
+timeline with Media Source Extensions. A single-file 540p encode under the limit is the fallback
+(and the plain <source>) wherever streaming isn't available.
 
 Artifacts don't serve .vtt files, so captions are embedded in the page as JSON. The page builds
 a native <track> from a blob URL and falls back to a scripted caption overlay.
@@ -90,9 +91,11 @@ def codec_string(path):
 def split_parts(master, stem):
     """Fragmented web encode cut at moof boundaries into parts under PART_LIMIT. Returns the part paths."""
     frag = OUT / f"{stem}-fragmented.mp4"
-    ffmpeg("-i", str(master), "-map", "0:v", "-map", "0:a", "-c:v", "libx264", "-preset", "slow", "-crf", "24",
-           "-tune", "animation", "-pix_fmt", "yuv420p", "-g", "150", "-c:a", "aac", "-b:a", "160k",
-           "-movflags", "+frag_keyframe+empty_moov+default_base_moof", str(frag))
+    if not frag.exists() or frag.stat().st_mtime < master.stat().st_mtime:
+        ffmpeg("-i", str(master), "-map", "0:v", "-map", "0:a", "-map_chapters", "-1",  # no chapter track: MSE wants exactly video + audio
+               "-c:v", "libx264", "-preset", "slow", "-crf", "24",
+               "-tune", "animation", "-pix_fmt", "yuv420p", "-g", "150", "-c:a", "aac", "-b:a", "160k",
+               "-movflags", "+frag_keyframe+empty_moov+default_base_moof", str(frag))
     data = frag.read_bytes()
     units = []  # [start, end): the init segment (ftyp + moov), then one unit per moof + mdat fragment
     for off, size, kind in top_level_boxes(data):
@@ -118,6 +121,18 @@ def split_parts(master, stem):
     return paths, codec_string(frag)
 
 
+def lite_encode(master, stem):
+    """A small single-file 540p version for browsers (or hosts) where streaming the parts fails."""
+    dst = OUT / f"{stem}-540p.mp4"
+    for crf in (28, 31, 34):
+        ffmpeg("-i", str(master), "-map", "0:v", "-map", "0:a", "-map_chapters", "-1", "-vf", "scale=960:540", "-c:v", "libx264", "-preset", "slow",
+               "-crf", str(crf), "-tune", "animation", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "96k",
+               "-movflags", "+faststart", str(dst))
+        if dst.stat().st_size <= PART_LIMIT:
+            return dst
+    sys.exit(f"{dst.name} is still {dst.stat().st_size / 1e6:.1f} MB at CRF 34")
+
+
 def main():
     narr = load_narration()
     stem = slug(narr)
@@ -126,14 +141,17 @@ def main():
     (OUT / "frames").mkdir(parents=True, exist_ok=True)
 
     web = OUT / f"{stem}.mp4"
-    if not web.exists() or web.stat().st_mtime < master.stat().st_mtime:
-        ffmpeg("-i", str(master), "-map", "0:v", "-map", "0:a", "-c:v", "libx264", "-preset", "slow", "-crf", "24",
-               "-tune", "animation", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "160k", "-movflags", "+faststart", str(web))
     video_files, video_parts = [web], "null"
-    if web.stat().st_size > PART_LIMIT:  # too big for one Artifact file: stream it in parts
+    long_video = tl["duration"] > 180  # at CRF 24, 1080p runs about 7 MB a minute: long videos never fit one file
+    if not long_video and (not web.exists() or web.stat().st_mtime < master.stat().st_mtime):
+        ffmpeg("-i", str(master), "-map", "0:v", "-map", "0:a", "-map_chapters", "-1", "-c:v", "libx264", "-preset", "slow", "-crf", "24",
+               "-tune", "animation", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "160k", "-movflags", "+faststart", str(web))
+    if long_video or web.stat().st_size > PART_LIMIT:  # too big for one Artifact file: stream it in parts
         parts, mime = split_parts(master, stem)
-        video_files = parts
-        video_parts = json.dumps({"parts": [p.name for p in parts], "mime": mime, "duration": tl["duration"]})
+        lite = lite_encode(master, stem)
+        video_files = [lite, *parts]  # the <source> is the lite file; the page upgrades to the parts when it can
+        video_parts = json.dumps({"parts": [p.name for p in parts], "mime": mime, "duration": tl["duration"],
+                                  "fallback": lite.name})
     poster_t = tl["scenes"][0]["end"] - 0.25  # the title card, fully formed
     ffmpeg("-ss", f"{poster_t:.2f}", "-i", str(master), "-frames:v", "1", "-vf", "scale=1280:720", "-q:v", "3", str(OUT / "poster.jpg"))
     for f in (OUT / "frames").glob("*.jpg"):

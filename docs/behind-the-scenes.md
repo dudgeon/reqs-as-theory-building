@@ -156,3 +156,92 @@ Each fix is already in the kit. The last column says where, so the next run won'
 | `render.js --frames` | ~85 s | 2,736 frames, 4 workers, 732 MB of JPEGs in `build/<slug>/frames` |
 | `encode.py` | ~60 s | x264 `-preset slow -crf 18 -tune animation`, two-pass loudnorm |
 | `storyboard.py`, `publish/page.py` | ~30 s | The web encode is CRF 24, 9.4 MB |
+
+---
+
+## The extended cut (about six minutes)
+
+### The brief
+
+The second request asked for a longer version, 4–6 minutes. Most of the extra time was to go into a deeper exploration of Naur's work. Some was to show how to go beyond hand-building specs, to *recursive product-shaping loops* that build trustworthy context, so that later work, whether adjacent or unrelated, resolves fewer unknown rules, draws on governed facts from earlier loops, and gets faster and better.
+
+### What came out
+
+| | |
+|---|---|
+| Video | `out/specs-as-theory-building-extended.mp4`, 6 min 5 s, 1920×1080, 30 fps, H.264 CRF 18, 82.3 MB, with 11 MP4 chapter markers |
+| Script | 981 words in 53 lines, 24 narrated scenes in 10 chapters, plus title and end cards. The chapters follow Naur's sections. |
+| Scenes | Seven scene files, about 4,900 lines: six written by parallel agents, one by the lead |
+| Audio | Narration, a chapter-aware music bed and 560 cue-synced sound effects; −16.0 LUFS integrated, −1.4 dBFS peak, 2.5 LU range |
+| Page | The web encode is split into four parts (13.7, 13.6, 13.9 and 3.0 MB) under the 15 MB file limit and streamed back into one timeline. An 11 MB 540p single file is the fallback. About 57 MB published in all. |
+| Wall clock | About 3 hours of active work, spread over 5 hours because the session was interrupted for two (see the timeline) |
+
+### Decisions
+
+1. **A second cut next to the first**, not a replacement. The kit was refactored so each video is a folder, `videos/<slug>/`, and every tool takes `VIDEO=<slug>`. The 90 s cut re-rendered identically after the move: audio bit for bit, video at 56.7 dB PSNR, which is Chromium's rasterization noise.
+2. **Follow the essay's own structure.** Chapters 1–7 walk through Naur's sections 1–8, including both field cases, Ryle, Newton and similarity, the three abilities, modification cost and decay, life, death and revival, method, and status. Agents, the enterprise, the loops and the takeaways follow. The essay page in the `naur` scene lists the real section headings to set this up.
+3. **Budget to the voice.** About 980 words at the stand-in's 176 wpm gave 6:05. A slower hosted voice would push it toward 7 minutes; that trade-off is noted in the script and the README.
+4. **Frame the loop idea as working *with* Naur.** Naur would reject a fact store posing as the theory, and a loop sold as "the right method". The script says facts are what the theory is built on, not the theory, and that the loop keeps the theory's holders verifying and deciding. That is Naur's program life, not a method replacing people.
+5. **Continuity of examples.** The enterprise scene's policy clause §4.2(b) and its "batch posts 2 a.m." sticky note come back in the loops chapter as a verified fact and an assumption.
+6. **Parallel scene agents, briefed by a written plan.** `storyboard-plan.md` holds the global rules (bands, palette meanings, motifs, motion, sound, code hygiene), a beat table per scene and a quote bank. Shared illustrations were added to `shapes.js` first and checked in one still.
+
+### How it went
+
+Times are approximate, in UTC.
+
+| When | What happened |
+|---|---|
+| 14:35–15:55 | Refactor for several videos; the extended script drafted (975 words). The short cut was rebuilt to prove the refactor safe. |
+| 15:57–16:01 | Extended narration voiced and aligned: 6:03, every cue found. |
+| 16:02–16:12 | A full re-read of the essay against the script corrected six lines (table in the script); re-voiced in two minutes because unchanged lines are cached. |
+| 16:12–16:20 | Shared helpers and a test still, the storyboard plan, stub scene files, `LENIENT` review mode; six scene agents dispatched. |
+| 16:17–16:35 | The case-study agent was cut off twice by the output filter; relaunched with a no-recitation instruction. The lead meanwhile wrote the closing scenes, the docs, the chapter-aware music, MP4 chapters and the split-video page. |
+| 16:39 | The session was interrupted and every background agent died with it. Three drafts had reached disk. |
+| 18:35 | Session resumed. Six agents relaunched: three fresh (told to save a complete draft early and never recite the source), three continuing the drafts with specific notes from the lead's review. |
+| 18:57–19:14 | Agents reported back one by one; each file was committed and pushed as it landed. |
+| 19:15–19:30 | Full build (13 min 40 s), QA and storyboard. The whole cut was reviewed as transition sheets and a 4-second sample; one headline was added (life/death) and three storyboard keyframes retimed. |
+| 19:30–19:45 | The page: four streamed parts plus a 540p fallback, tested in headless Chromium (streaming path with a VP9 test file, fallback path, phone width), then published. |
+
+### What went well
+
+- **The plan as the brief.** Six agents who never saw each other's work came back with scenes in one visual language: the same headline band, palette meanings, hand-lettered labels, constellations, fact cards and seals.
+- **Shared helpers first.** `holder`, `theoryBubble`, `factCard`, `factChip`, `seal`, `stamp`, `book`, `clock`, and ghost and perturbed constellations gave every agent the recurring motifs ready-made.
+- **One file per agent.** No merge conflicts, clean ownership, and each file could be committed the moment it was done.
+- **`LENIENT=1`.** Agents reviewed their own scenes while neighbours were half-written. One agent's transient syntax error didn't stop the others.
+- **Drafts on disk survive.** After the interruption, continuation agents polished the three surviving drafts in 18–28 minutes each instead of starting over.
+- **Cue-driven timing, again.** Six re-voiced lines re-timed everything with no code changes.
+
+### What went wrong, and how it was fixed
+
+Numbering continues from the table above.
+
+| # | Symptom | Cause | Fix | Now prevented by |
+|---|---|---|---|---|
+| 23 | Draft script drifted from the source in six places ("buried under", "argue for it", …) | Paraphrase compressions accumulate in a long script | A full re-read of the essay after drafting, before any scene work | Playbook, long-form section |
+| 24 | The case-study agent was cut off twice: "Output blocked by content filtering policy" | It recited the essay's case passages from memory while "checking fidelity" | Relaunched with an instruction to use only the plan's quote bank and never more than about ten consecutive words of the source | Playbook; the agent brief |
+| 25 | All six scene agents lost mid-work | The session was interrupted; background agents don't outlive it | Relaunched: fresh agents for empty files, continuation briefs for drafts on disk; a scheduled fallback check-in | Agents save a complete draft early; the lead commits each file as it lands |
+| 26 | A missing scene file stops every render | `index.html` rejects when a script fails to load | Stub every scene file before dispatching agents | Playbook |
+| 27 | One unfinished scene could break every agent's reviews | A throwing scene aborted `render.js` | `LENIENT=1` logs and skips failing scenes during review; full builds stay strict | `main.js`, `render.js` |
+| 28 | A six-minute video doesn't fit an Artifact file | Files are capped at 15 MB | Fragmented MP4 cut at `moof` boundaries; the page streams the parts with Media Source Extensions, with a join-to-blob fallback | `publish/page.py`, the page template |
+| 29 | The takeaways opened on a lone headline for 0.6 s | The first row waits for its cue | Numbered placeholder slots from the scene's start | `g-close.js` |
+| 30 | Fact-card labels at 15 px | Helper default too small for 1080p | 17–18 px | `shapes.js` |
+| 31 | The web encodes carried a third, data track | `encode.py` now writes MP4 chapter markers, and ffmpeg copies them into every encode made from the master by default. Media Source Extensions expect exactly the declared video and audio tracks. | `-map_chapters -1` on every web encode; caught by probing the streams before publishing | `publish/page.py` |
+| 32 | Couldn't confirm that the page host allows `blob:` media | The Artifact sandbox's content policy isn't visible from the build environment, and headless Chromium can't play H.264 anyway | An 11 MB 540p single file is the plain `<source>` and the automatic fallback if streaming fails or times out. The streaming code was tested in Chromium with a VP9 copy split the same way. | `publish/page.py`, the page template |
+
+### What I would do differently
+
+1. **Tell scene agents about the output filter and early saves from the start.** Both cost a relaunch.
+2. **Commit each agent's file the moment it lands.** Before the interruption nothing had been committed except stubs.
+3. **Keep the lead out of scene work** except the bookends, and spend that time on integration, docs and kit features. That split worked well.
+4. **Promote the helpers several agents wrote independently**: a tick badge, a word-time lookup, a pencil and a paper-backed stamp were each written two or three times.
+
+### Build-step numbers for the extended cut (4 vCPU, no GPU)
+
+| Step | Time | Notes |
+|---|---|---|
+| `tts.py` (Kokoro, 53 lines) | ~2 min cold, seconds when cached | 981 words, 333.5 s of speech |
+| `align.py` | ~1 min 40 s | Whisper small.en, int8 |
+| `mix.py` | ~1.5 min | the chapter-aware bed for 6 minutes, plus 560 effects |
+| `render.js --frames` | 353 s | 10,951 frames, 4 workers, 3.0 GB of JPEGs |
+| `encode.py` | ~4.5 min | CRF 18, 82.3 MB, chapter markers |
+| `publish/page.py` | ~4 min | fragmented web encode cut into four parts, plus the 540p fallback |
