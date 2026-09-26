@@ -164,6 +164,7 @@ SCENES.scratch = {
     const eH = enter(t, S.start + 0.02, { dy: 14 });
     out.push(G({ o: eH.o, y: eH.y }, richText([{ t: 'From ' }, { t: 'scratch', fill: C.coral }, { t: ', every time' }], 960, 150, { font: 'serif', size: 60, weight: 600, anchor: 'middle' })));
     const lanes = scratchPlan(S);
+    const LN = [];   // everything in the lanes: eased inwards as the loop closes around it
     const dimL = 1 - 0.5 * P(t, longer - 0.45, 0.5);          // the lanes step back for the long document…
     const fogBack = P(t, longer - 0.45, 1.0, 'inOut');         // …and the mist rolls back over what they found
     const thin = P(t, lw - 0.2, 1.1, 'inOut');                 // the loop starts to thin it
@@ -182,17 +183,10 @@ SCENES.scratch = {
       const stop = k => IX[k] - STAND[k];
       const front = glide(t, [[L.go, X0], [L.rev[0] - 0.05, stop(0)], [L.rev[0] + 0.12, stop(0)], [L.rev[1] - 0.05, stop(1)], [L.rev[1] + 0.1, stop(1)], [L.rev[2] + 0.25, stop(2)]]);
       const walking = t > L.go && t < L.rev[2] + 0.25;
-      // ground, the blank spec each team starts from, and what it finds
+      // ground and the blank spec each team starts from
       const base = [line(300, gy, 1800, gy, { stroke: C.ink3, sw: 2.5, dash: '3 12', o: 0.7 })];
       base.push(G({ x: 200, y: gy - 74, r: -3 }, docCard({ w: 112, h: 142, title: 'SPEC', titleColor: C.coral, lines: 0, accent: C.coral, seed: 70 + li })));
-      SCR_ITEMS.forEach((f, k) => {
-        const p = P(t, L.rev[k], 0.5, 'outBack');
-        if (p <= 0) return;
-        const ring = P(t, L.rev[k], 0.7, 'out');
-        if (ring < 1) base.push(circle(IX[k], iy, 40 + 62 * ring, { stroke: li ? C.coral : C.teal, sw: 4, o: 1 - ring }));
-        base.push(G({ x: IX[k], y: iy - 12 * (1 - p), s: lerp(0.4, 1, p), o: clamp(p * 2) }, f()));
-      });
-      out.push(G({ o: eL.o * dimL, y: eL.y }, base));
+      LN.push(G({ o: eL.o * dimL, y: eL.y }, base));
       // the mist: the trail behind the team is clear, and it parts around each find (until it rolls back)
       const found = IX.map((ix, k) => P(t, L.rev[k] - 0.05, 0.55, 'out'));
       const mist = blobs[li].map(([bx, by, br, ph, asp]) => {
@@ -200,14 +194,24 @@ SCENES.scratch = {
         found.forEach((fp, k) => { if (fp > 0) c = Math.max(c, fp * (1 - sstep((Math.hypot((bx - IX[k]) / 1.3, by - iy) - 60) / 100))); });
         return fogBlob(t, bx, by, br * (1 - 0.25 * thin), ph + li * 2.1, (1 - 0.5 * thin) * (1 - c * (1 - fogBack)), asp);
       });
-      out.push(G({ o: eL.o, y: eL.y }, mist));
+      LN.push(G({ o: eL.o, y: eL.y }, mist));
       // the team (lane 1 is pleased with its finds; lanes 2 and 3 have seen them before)
       const team = L.team.map(([shirt, skin, hair, hs], m) => {
         const bob = walking ? -Math.abs(Math.sin((t - L.go) * 8.5 + m * 1.3)) * 7 : 0;
         const mood = li === 0 ? (t > L.rev[0] + 0.2 ? 'happy' : 'neutral') : (t > L.rev[1] + 0.15 ? 'worried' : 'neutral');
         return G({ x: front - m * 88, y: gy + bob, s: 0.6 }, person(t, { shirt, skin, hair, hairStyle: hs, seed: 20 + li * 2 + m, look: 0.6, mood }));
       });
-      out.push(G({ o: eL.o * (1 - 0.68 * fogBack), y: eL.y }, team));
+      LN.push(G({ o: eL.o * (1 - 0.68 * fogBack), y: eL.y }, team));
+      // what it finds, in front of the team
+      const finds = [];
+      SCR_ITEMS.forEach((f, k) => {
+        const p = P(t, L.rev[k], 0.5, 'outBack');
+        if (p <= 0) return;
+        const ring = P(t, L.rev[k], 0.7, 'out');
+        if (ring < 1) finds.push(circle(IX[k], iy, 40 + 62 * ring, { stroke: li ? C.coral : C.teal, sw: 4, o: 1 - ring }));
+        finds.push(G({ x: IX[k], y: iy - 12 * (1 - p), s: lerp(0.4, 1, p), o: clamp(p * 2) }, f()));
+      });
+      LN.push(G({ o: eL.o * dimL * (1 - 0.7 * fogBack), y: eL.y }, finds));
     });
     // déjà vu: the same three things, found three times
     const same = [];
@@ -221,12 +225,14 @@ SCENES.scratch = {
       if (bp > 0) same.push(G({ x: ix, y: (y1 + y2) / 2, s: bp }, circle(0, 0, 23, { fill: C.card, stroke: C.coral, sw: 3.5 }), T('=', 0, 12, { size: 36, weight: 800, fill: C.coral, anchor: 'middle' })));
     }));
     const sameO = 1 - P(t, longer - 0.45, 0.4);
-    out.push(G({ o: sameO }, same));
+    LN.push(G({ o: sameO }, same));
     const wS = wordAt(S, 0, 'same', S.cue('again') + 0.8);
     const eS = enter(t, wS - 0.2, { dy: 10 });
-    if (eS.o * sameO > 0) out.push(G({ o: eS.o * sameO, y: eS.y }, richText([
+    if (eS.o * sameO > 0) LN.push(G({ o: eS.o * sameO, y: eS.y }, richText([
       { t: 'same', fill: C.coral }, { t: ' rules, ' }, { t: 'same', fill: C.coral }, { t: ' quirks, ' }, { t: 'same', fill: C.coral }, { t: ' owners' },
     ], 960, 935, { font: 'hand', size: 52, weight: 700, anchor: 'middle', fill: C.ink })));
+    const gather = lerp(1, 0.88, P(t, lw - 0.35, 1.0, 'inOut'));
+    out.push(G({ x: 960, y: 590, s: gather }, G({ x: -960, y: -590 }, LN)));
     // a longer document: it grows and grows, and the mist stays
     const dIn = enter(t, longer - 0.35, { dy: 20, d: 0.45 });
     const dOut = 1 - P(t, lw - 0.4, 0.4);
@@ -352,7 +358,7 @@ SCENES.governed = {
     // phase 2 reframe: the verified card moves left to make room
     const mv = P(t, ass - 0.8, 0.65, 'inOut');
     const side = 1 - P(t, ass - 0.85, 0.4);                     // provenance props leave
-    const cx = lerp(1010, 590, mv), cy = lerp(548, 540, mv), cs = lerp(1.1, 0.95, mv);
+    const cx = lerp(1010, 566, mv), cy = lerp(548, 556, mv), cs = lerp(1.16, 1.05, mv);
     // the source: the policy clause from the enterprise scene
     const eP = enter(t, S.start + 0.02, { dy: 20 });
     const hl = P(t, S.start + 0.2, 0.35);
@@ -385,7 +391,7 @@ SCENES.governed = {
     // SOURCE ↔ the clause
     const sp = P(t, src - 0.15, 0.55, 'inOut');
     if (sp > 0 && side > 0) {
-      const [ax, ay] = toP(-322, 36);
+      const [ax, ay] = toP(-332, 36);
       out.push(G({ o: side }, drawPath(arcPath(px + 128, py - 16, ax, ay, 0.18), sp, { stroke: C.goldDeep, sw: 3.5 }),
         circle(px + 128, py - 16, 6 * clamp(sp * 4), { fill: C.goldDeep }), circle(ax, ay, 6 * clamp(sp * 2 - 1), { fill: C.goldDeep })));
     }
@@ -395,7 +401,7 @@ SCENES.governed = {
     if (eO.o * side > 0) {
       const ck = P(t, ver + 0.1, 0.4, 'outBack');
       out.push(G({ o: eO.o * side, y: eO.y }, G({ x: ox, y: oy, s: 0.95 * eO.s }, iconBust({ color: C.teal, skin: C.skin[3], hair: C.hair[3] })),
-        T('Payments Compliance', ox, oy + 96, { size: 22, weight: 700, fill: C.tealDark, anchor: 'middle' }),
+        T('Payments Compliance', ox, oy + 98, { size: 24, weight: 700, fill: C.tealDark, anchor: 'middle' }),
         ck > 0 ? G({ x: ox + 52, y: oy - 34, s: ck }, circle(0, 0, 24, { fill: C.teal }), G({ s: 0.7 }, checkMark(1, { color: C.card, sw: 9 }))) : ''));
       const [bx, by] = toP(360, 76);
       out.push(G({ o: side }, drawPath(arcPath(bx + 6, by, ox - 62, oy + 8, -0.12), P(t, own - 0.1, 0.5, 'inOut'), { stroke: C.tealDark, sw: 3.5 })));
@@ -415,23 +421,23 @@ SCENES.governed = {
     // the sticky note from the enterprise scene becomes an ASSUMED fact
     const nIn = P(t, ass - 0.75, 0.5, 'out');
     const morph = P(t, ass - 0.3, 0.45, 'inOut');
-    const ax = 1400, ay = 355;
+    const ax = 1420, ay = 350, rs = 1.1;   // the right-hand cards (assumed, decision)
     if (nIn > 0 && morph < 1) {
       const nx = lerp(2080, ax - 40, nIn), ny = lerp(260, ay, nIn);
-      out.push(G({ x: nx, y: ny, s: lerp(1, 2.1, morph), r: lerp(14, 4, nIn), o: 1 - morph }, stickyNote(['batch posts', '2 a.m. only'], { w: 200, h: 120, size: 34, r: 0 })));
+      out.push(G({ x: nx, y: ny, s: lerp(1, 2.3, morph), r: lerp(14, 4, nIn), o: 1 - morph }, stickyNote(['batch posts', '2 a.m. only'], { w: 200, h: 120, size: 34, r: 0 })));
     }
     if (morph > 0) {
       const kA = clamp(morph * 1.3) + P(t, ass + 0.2, 0.4) + P(t, ass + 0.55, 0.4);
-      out.push(G({ x: ax, y: ay, s: lerp(0.45, 1, Ease.outBack(morph)), o: clamp(morph * 2) },
+      out.push(G({ x: ax, y: ay, s: rs * lerp(0.45, 1, Ease.outBack(morph)), o: clamp(morph * 2) },
         factCard({ w: 600, claim: 'Batch posts at 2 a.m. only', rows: [['SOURCE', 'one engineer’s memory'], ['OWNER', 'needs an owner']], status: 'assumed', reveal: kA / 3 })));
     }
     // a decision keeps its reasons
     const eDc = enter(t, dec - 0.3, { dy: 22 });
     if (eDc.o > 0) {
-      const dy0 = 725;
+      const dy0 = 730;
       const kD = 1 + P(t, dec + 0.1, 0.4) + P(t, dec + 0.5, 0.4);
       const strike = P(t, dec + 0.95, 0.35, 'inOut');
-      out.push(G({ x: ax, y: dy0 + eDc.y, s: eDc.s, o: eDc.o },
+      out.push(G({ x: ax, y: dy0 + eDc.y, s: rs * eDc.s, o: eDc.o },
         factCard({ w: 600, kind: 'DECISION', claim: 'Hold for review', rows: [['WHY', 'rejecting would harm customers'], ['REJECTED', 'auto-reject']], status: null, reveal: kD / 3 }),
         drawPath('M-138 71 L6 69', strike, { stroke: C.coral, sw: 4 })));
     }
@@ -538,9 +544,9 @@ SCENES.compound = {
     // tiles
     const T1 = [];
     M.hexes.forEach(h => {
-      const edgeO = clamp((1 - h.d) * 5);
-      const ent = P(t, S.start + 0.02 + (h.x - 150) / 1640 * 0.55, 0.4);
       const ca = clearAt.get(h.id);
+      const edgeO = ca != null ? 1 : clamp((1 - h.d) * 5);   // known ground never fades at the map's edge
+      const ent = P(t, S.start + 0.02 + (h.x - 150) / 1640 * 0.55, 0.4);
       const f = ca == null ? 0 : ca < -1e8 ? 1 : P(t, ca, 0.5, 'inOut');
       const clear = f >= 0.5;
       const isRule = h === M.rule1;
@@ -579,14 +585,17 @@ SCENES.compound = {
     // badges: which loop, and the spec it produced
     const badges = [
       { x: 336, y: 850, t0: S.start + 0.3, n: 1 },
-      { x: 790, y: 376, t0: sf + 0.3, n: 2 },
+      { x: 556, y: 372, t0: sf + 0.3, n: 2 },
       { x: 1480, y: 376, t0: orth - 0.1, n: 3 },
     ];
-    const specPos = [];
+    // a changed rule reaches every spec that relied on it (drawn under the badges, so each line ends in its badge)
+    badges.forEach((b, i) => {
+      const p = P(t, imp - 0.3 + i * 0.22, 0.6, 'inOut');
+      if (p > 0) out.push(drawPath(arcPath(M.rule1.x, M.rule1.y, b.x + 94, b.y, [0.25, -0.2, -0.18][i]), p, { stroke: C.coral, sw: 4 }));
+    });
     badges.forEach((b, i) => {
       const e = enter(t, b.t0, { dy: 10 });
       const hot = P(t, imp - 0.1 + i * 0.22 + 0.45, 0.3);
-      specPos.push([b.x + 94, b.y]);
       if (e.o <= 0) return;
       const running = i === 0 ? 0 : clamp((t - b.t0) / 3) < 1 ? 1 : 0;
       out.push(G({ x: b.x, y: b.y + e.y, s: e.s, o: e.o }, shadowCard(-132, -36, 264, 72, { rx: 36 }),
@@ -647,20 +656,19 @@ SCENES.compound = {
       const glowP = 0.75 + 0.25 * Math.sin(t * 3 + id);
       out.push(G({ x: h.x, y: h.y, o: clamp(p * 2) * (1 - 0.4 * spot) }, circle(0, 0, 36 * p, { stroke: C.gold, sw: 5, o: glowP }), G({ s: p, y: -2 }, judgePerson())));
     });
-    out.push(lab('the work that needs judgment', 1030, 668, jd - 0.08, l3 - 0.3, C.goldDeep));
+    const jO = P(t, jd - 0.08, 0.4) * (1 - P(t, l3 - 0.3, 0.4));
+    if (jO > 0) {
+      out.push(G({ o: jO }, T('the work that needs judgment', 1034, 668, { font: 'hand', size: 54, weight: 700, fill: C.goldDeep, anchor: 'middle', stroke: C.paper, sw: 10 })));
+      const aw = P(t, jd + 0.1, 0.45, 'inOut') * (1 - P(t, l3 - 0.3, 0.4));
+      if (aw > 0) out.push(handArrow(746, 652, 690, 640, aw, { color: C.goldDeep, bend: 0.25, sw: 4, head: 13 }), handArrow(1326, 642, 1406, 596, aw, { color: C.goldDeep, bend: -0.25, sw: 4, head: 13 }));
+    }
     // a rule changes: every spec that relied on it lights up
     const r = M.rule1;
     const rc = P(t, wCh - 0.25, 0.5, 'out');
     if (rc > 0) {
       for (let k = 0; k < 2; k++) { const q = ((t - wCh + 0.25) * 0.8 + k * 0.5) % 1; out.push(circle(r.x, r.y, 36 + 70 * q, { stroke: C.coral, sw: 3, o: (1 - q) * rc })); }
-      out.push(lab('rule changed', r.x - 150, r.y - 70, wCh - 0.2, S.end, C.coral));
+      out.push(lab('rule changed', r.x - 214, r.y - 44, wCh - 0.2, S.end, C.coral));
     }
-    specPos.forEach(([sx, sy], i) => {
-      const p = P(t, imp - 0.3 + i * 0.22, 0.6, 'inOut');
-      if (p <= 0) return;
-      const bend = i === 0 ? 0.25 : i === 1 ? -0.2 : -0.18;
-      out.push(drawPath(arcPath(r.x, r.y, sx, sy, bend), p, { stroke: C.coral, sw: 4 }));
-    });
     return G({ o: X.o, y: X.y }, out);
   },
   sfx: S => {
@@ -701,18 +709,18 @@ SCENES.naurloop = {
     out.push(G({ o: eH.o, y: eH.y }, richText([{ t: 'With ' }, { t: 'Naur', fill: C.goldDeep }, { t: ', not around him' }], 960, 150, { font: 'serif', size: 60, weight: 600, anchor: 'middle' })));
     // the head group; its origin is the top of the plinth its facts will form. It starts right of centre, moves to the
     // middle and rises onto its facts ("built on"), then steps left to make room for the loop.
-    const toC = P(t, bo - 0.5, 0.9, 'inOut');
-    const lift = P(t, bo - 0.05, 0.7, 'outBack');
+    const toC = P(t, bo - 0.25, 0.9, 'inOut');
+    const lift = P(t, bo + 0.15, 0.7, 'outBack');
     const sl = P(t, il - 0.95, 0.85, 'inOut');
     const gx = lerp(lerp(1350, 960, toC), 420, sl);
     const gy = lerp(lerp(772, 684, lift), 664, sl);
     const gs = lerp(1, 0.74, sl);
     const hs = 0.88, K = HEAD_K();
-    const bright = P(t, bo + 0.1, 0.6) + 0.5 * P(t, al, 0.5) * (1 - P(t, al + 1.2, 0.8));
-    const eHd = enter(t, S.start + 0.4, { d: 0.6 });
+    const bright = P(t, bo + 0.3, 0.6) + 0.5 * P(t, al, 0.5) * (1 - P(t, al + 1.2, 0.8));
+    const eHd = enter(t, S.start + 0.1, { d: 0.6 });
     out.push(G({ x: gx, y: gy, s: gs }, G({ x: -10, y: -262 * hs + eHd.y, s: hs * eHd.s, o: eHd.o },
       circle(0, -40, 240, { fill: 'url(#gGlow)', o: (0.3 + 0.1 * Math.sin(t * 2.4)) * bright }),
-      bigHead(t), constellation(t, K, { t0: S.start + 0.6, dur: 1.4, size: 7 + 1.2 * bright, lineW: 2.6, glow: 1 + 0.7 * bright }))));
+      bigHead(t), constellation(t, K, { t0: S.start + 0.45, dur: 1.4, size: 7 + 1.2 * bright, lineW: 2.6, glow: 1 + 0.7 * bright }))));
     // the facts: a loose pile at the left, then the plinth under the head (bottom row first)
     const plinth = [[-160, 146], [0, 146], [160, 146], [-80, 52], [80, 52]];
     const pile = [[-10, 173, -4], [9, 124, 3], [-7, 76, -2], [10, 27, 4], [-4, -22, -1]];
@@ -720,9 +728,9 @@ SCENES.naurloop = {
     for (let f = 0; f < 5; f++) {
       const pi = 4 - f;
       const [dx, dy, rr] = pile[pi];
-      const e = P(t, S.start + 0.25 + pi * 0.1, 0.4, 'outBack');
+      const e = P(t, S.start + 0.04 + (4 - pi) * 0.08, 0.4, 'outBack');
       if (e <= 0) continue;
-      const fl = P(t, bo - 0.45 + f * 0.09, 0.7, 'inOut');
+      const fl = P(t, bo - 0.18 + f * 0.08, 0.62, 'inOut');
       const [sx, sy] = [pX + dx + wobble(t, 0.3, 2, pi) * (1 - fl), pY + dy - 40 * (1 - e)];
       const [tx, ty] = [gx + plinth[f][0] * gs, gy + plinth[f][1] * gs];
       const [x, y] = fl > 0 ? quadPoint(sx, sy, tx, ty, -0.16, fl) : [sx, sy];
@@ -730,26 +738,26 @@ SCENES.naurloop = {
     }
     // facts ≠ theory
     const ne = P(t, fn - 0.3, 0.45, 'outBack');
-    const neOut = 1 - P(t, bo - 0.45, 0.35);
+    const neOut = 1 - P(t, bo - 0.3, 0.32);
     if (ne > 0 && neOut > 0) {
       out.push(G({ x: 928, y: 560, s: ne * pulse(t, fn + 0.2, 0.4, 0.06), o: neOut }, T('≠', 0, 70, { font: 'serif', size: 210, weight: 700, fill: C.coral, anchor: 'middle' })));
-      out.push(G({ o: clamp(ne * 2) * neOut }, T('facts', pX, 838, { font: 'hand', size: 58, weight: 700, fill: C.tealDark, anchor: 'middle' }),
-        T('theory', 1335, 848, { font: 'hand', size: 58, weight: 700, fill: C.goldDeep, anchor: 'middle' })));
+      out.push(G({ o: clamp(ne * 2) * neOut }, T('facts', pX, 842, { font: 'hand', size: 58, weight: 700, fill: C.tealDark, anchor: 'middle' }),
+        T('theory', 1335, 842, { font: 'hand', size: 58, weight: 700, fill: C.goldDeep, anchor: 'middle' })));
     }
     // …but it is built on them
-    const eB = P(t, bo + 0.2, 0.45);
+    const eB = P(t, bo + 0.45, 0.45);
     const bOut = 1 - P(t, il - 0.95, 0.4);
     if (eB * bOut > 0) {
       const lx = gx - 262 * gs, ly = gy + 112 * gs;
       out.push(G({ o: eB * bOut }, T('built on', lx - 28, ly + 16, { font: 'hand', size: 58, weight: 700, fill: C.tealDark, anchor: 'end' }),
-        handArrow(lx - 18, ly - 2, lx + 24, ly - 8, P(t, bo + 0.35, 0.35, 'inOut'), { color: C.tealDark, bend: -0.2, sw: 4, head: 13 })));
+        handArrow(lx - 18, ly - 2, lx + 24, ly - 8, P(t, bo + 0.6, 0.35, 'inOut'), { color: C.tealDark, bend: -0.2, sw: 4, head: 13 })));
     }
     // the loop keeps the people who hold the theory in it: holders at Verify and Specify
     const rx0 = 1010, ry0 = 560, rr0 = 200, k = 0.8;
-    const rIn = P(t, il - 0.45, 0.7, 'inOut');
+    const rIn = P(t, il - 0.62, 0.75, 'inOut');
     if (rIn > 0) {
       const A = RING.map(s => s.a);
-      const st = A.map((a, i) => P(t, il - 0.1 + i * 0.09, 0.45, 'linear'));
+      const st = A.map((a, i) => P(t, il - 0.2 + i * 0.09, 0.45, 'linear'));
       const lapT = il + 0.4;
       const tok = t < lapT ? null : -90 + ((t - lapT) * 95) % 360;
       const hi = A.map(a => { if (tok == null) return 0; const dd = Math.abs((((tok - a) % 360) + 540) % 360 - 180); return clamp(1 - dd / 26); });
@@ -785,11 +793,11 @@ SCENES.naurloop = {
     const wV = wordAt(S, 1, 'verifying', il + 1.9), wD = wordAt(S, 1, 'deciding', il + 2.7);
     return [
       { t: S.start + 0.05, type: 'whoosh', dur: 0.5, gain: 0.4 },
-      ...[0, 1, 2, 3, 4].map(i => ({ t: S.start + 0.25 + i * 0.1, type: 'tick', gain: 0.35, pitch: 0.9 + i * 0.05 })),
-      { t: S.start + 0.6, type: 'chime', note: 0, gain: 0.5 },
+      ...[0, 1, 2, 3, 4].map(i => ({ t: S.start + 0.04 + i * 0.08, type: 'tick', gain: 0.35, pitch: 0.9 + i * 0.05 })),
+      { t: S.start + 0.45, type: 'chime', note: 0, gain: 0.5 },
       { t: fn - 0.3, type: 'scribble', dur: 0.35, gain: 0.5 },
-      { t: bo - 0.45, type: 'whoosh', dur: 0.7, gain: 0.5 }, { t: bo + 0.2, type: 'chime', note: 2 }, { t: bo + 0.3, type: 'thud', gain: 0.5 },
-      { t: il - 0.95, type: 'swish', dur: 0.8, gain: 0.4 }, { t: il - 0.45, type: 'whoosh', dur: 0.7, gain: 0.35 },
+      { t: bo - 0.2, type: 'whoosh', dur: 0.7, gain: 0.5 }, { t: bo + 0.5, type: 'thud', gain: 0.5 }, { t: bo + 0.6, type: 'chime', note: 2 },
+      { t: il - 0.95, type: 'swish', dur: 0.8, gain: 0.4 }, { t: il - 0.62, type: 'whoosh', dur: 0.7, gain: 0.35 },
       { t: il - 0.3, type: 'pop', pitch: 1.0, gain: 0.5 }, { t: il - 0.1, type: 'pop', pitch: 1.15, gain: 0.5 },
       { t: wV - 0.25, type: 'pluck', note: 4, gain: 0.5 }, { t: wD - 0.25, type: 'pluck', note: 7, gain: 0.5 },
       { t: al - 0.3, type: 'rise', dur: 0.5, gain: 0.4 }, { t: al + 0.2, type: 'chime', note: 4 },
