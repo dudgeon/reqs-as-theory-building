@@ -63,7 +63,7 @@ SCENES.title = {
     const x0 = 960 - (wA + wR) / 2, x1 = 960 - (wB + wR) / 2;
     const e2 = enter(t, at(0.22), { dy: 30, d: 0.7 });
     const strike = P(t, at(0.85), 0.38, 'inOut');
-    const goneA = P(t, at(1.28), 0.4, 'in');
+    const goneA = P(t, at(1.22), 0.34, 'inOut');
     const m = P(t, at(1.33), 0.75, 'inOut');
     const dropB = P(t, at(1.52), 0.65, 'outBack');
     const inB = P(t, at(1.52), 0.25, 'out');
@@ -122,7 +122,7 @@ SCENES.hook = {
       if (sp > 0) out.push(sparkle(pp.x + 34, 590 - 18 * sp, 16 * sp * (1 + 0.1 * Math.sin(t * 5 + i)), { fill: C.gold }));
     });
     // --- the stack: sheets slide in under a code card, which rides up on top
-    const sx = 1230, sBase = 885, N = 22;
+    const sx = 1230, sBase = 885, N = 28;
     const sheetT = i => g0 + (g1 - g0) * (i / (N - 1));
     const stack = [];
     let count = 0;
@@ -155,7 +155,7 @@ SCENES.hook = {
         [0, 1, 2].map(j => rect(-12, -14 + j * 11, 24 - j * 5, 4.5, { rx: 2, fill: CODE_COLORS[(k + j) % CODE_COLORS.length], o: 0.7 }))));
     }
     // cross it out
-    out.push(G({ x: sx, y: 640 }, crossMark(P(t, nc - 0.2, 0.5, 'inOut'), { size: 130, sw: 18 })));
+    out.push(G({ x: sx, y: 610 }, crossMark(P(t, nc - 0.2, 0.5, 'inOut'), { size: 150, sw: 20 })));
     // "?" and label
     const qp = P(t, q - 0.25, 0.55, 'outBack');
     const qFade = 1 - P(t, nc - 0.15, 0.4);
@@ -170,11 +170,11 @@ SCENES.hook = {
     if (jp.o > 0) {
       const jn = 'Microprocessing and Microprogramming 15 (1985)';
       const title = 'Programming as Theory Building';
-      const wJ = measure(jn, 22, 'sans', 600), wT = measure(title, 40, 'serif', 600);
+      const wJ = measure(jn, 24, 'sans', 600), wT = measure(title, 40, 'serif', 600);
       const cw = Math.max(640, Math.max(wJ, wT) + 80), x = -cw / 2 + 40;
       const card = [
         shadowCard(-cw / 2, -150, cw, 300, { rx: 6 }),
-        T(jn, x, -100, { size: 22, weight: 600, fill: C.ink2 }),
+        T(jn, x, -100, { size: 24, weight: 600, fill: C.ink2 }),
         line(x, -82, cw / 2 - 40, -82, { stroke: C.faint, sw: 2 }),
         T(title, x, -30, { font: 'serif', size: 40, weight: 600 }),
         underline(x - 2, -12, wT + 4, P(t, ans - 0.2, 0.6, 'inOut'), { color: C.gold, sw: 6 }),
@@ -212,8 +212,9 @@ const NAUR_SECTIONS = [
   'Programmers’ status and the Theory Building View',
   'Conclusions',
 ];
-const NAUR_ROW_Y = i => -52 + i * 40;
-const NAUR_LENS_X = -322;
+const NAUR_ROW_Y = i => -66 + i * 44;
+const NAUR_LENS_X = -340;
+const NAUR_CARD_S = 1.18;   // the three cards are drawn 400×330 and shown at this scale
 
 // Card 1: the ALGOL 60 report cover (400×330, centred). code 0…1 types the begin…end block; hl 0…1 marks the editor.
 function naurAlgolCard(t, o = {}) {
@@ -300,25 +301,29 @@ function naurTuringCard(t, o = {}) {
   if (drop >= 1) out.push(sparkle(52 + swing * 2, -120, 11 * sp, { fill: C.gold, o: 0.9 }));
   return out.join('');
 }
-// The essay's section list; focus(i) 0…1 brings heading i into focus; ly = lens height (current-row tint).
-function naurRows(focus, ly) {
+// The essay's section list. show(i) 0…1 reveals heading i; focus(i) 0…1 brings it into focus; ly = lens height (current-row tint).
+function naurRows(focus, ly, show = () => 1) {
   const out = [];
   NAUR_SECTIONS.forEach((s, i) => {
+    const v = show(i);
+    if (v <= 0) return;
     const k = focus(i), y = NAUR_ROW_Y(i);
-    const near = ly == null ? 0 : Math.max(0, 1 - Math.abs(ly - (y - 8)) / 34);
-    if (near > 0) out.push(rect(-352, y - 29, 704, 40, { rx: 10, fill: C.goldLight, o: 0.4 * near }));
-    out.push(circle(-322, y - 8, 16, { fill: C.goldDeep, o: k }), circle(-322, y - 8, 16, { stroke: mixColor(C.faint, C.goldDeep, k), sw: 2.5 }));
-    out.push(T(String(i + 1), -322, y, { size: 22, weight: 800, fill: mixColor(C.ink3, C.card, k), anchor: 'middle' }));
-    out.push(T(s, -290, y, { size: 24, weight: 500, fill: mixColor(C.ink3, C.ink, k) }));
+    const near = ly == null ? 0 : Math.max(0, 1 - Math.abs(ly - (y - 9)) / 38);
+    const row = [];
+    if (near > 0) row.push(rect(-372, y - 33, 764, 46, { rx: 11, fill: C.goldLight, o: 0.4 * near }));
+    row.push(circle(-340, y - 9, 18, { fill: C.goldDeep, o: k }), circle(-340, y - 9, 18, { stroke: mixColor(C.faint, C.goldDeep, k), sw: 2.5 }));
+    row.push(T(String(i + 1), -340, y, { size: 24, weight: 800, fill: mixColor(C.ink3, C.card, k), anchor: 'middle' }));
+    row.push(T(s, -306, y, { size: 28, weight: 500, fill: mixColor(C.ink3, C.ink, k) }));
+    out.push(v < 1 ? G({ x: (1 - v) * 18, o: v }, row) : row.join(''));
   });
   return out.join('');
 }
-// The essay's first page (900×630, centred) with its section list and a magnifier.
+// The essay's first page (960×690, centred) with its section list and a magnifier.
 function naurEssayPage(t, o = {}) {
-  const { ul = 0, focus = () => 0, ly = null, lensIn = 0 } = o;
-  const w = 900, h = 630, x = -w / 2, y = -h / 2;
+  const { ul = 0, focus = () => 0, ly = null, lensIn = 0, show } = o;
+  const w = 960, h = 690, x = -w / 2, y = -h / 2;
   const out = [shadowCard(x, y, w, h, { rx: 8 })];
-  out.push(T('Microprocessing and Microprogramming 15 (1985) 253–261', x + 50, y + 54, { size: 22, weight: 600, fill: C.ink2 }));
+  out.push(T('Microprocessing and Microprogramming 15 (1985) 253–261', x + 50, y + 54, { size: 24, weight: 600, fill: C.ink2 }));
   out.push(line(x + 50, y + 72, x + w - 50, y + 72, { stroke: C.faint, sw: 2 }));
   const title = 'Programming as Theory Building';
   const wT = measure(title, 48, 'serif', 600);
@@ -326,10 +331,10 @@ function naurEssayPage(t, o = {}) {
   out.push(underline(-wT / 2 - 4, y + 154, wT + 8, ul, { color: C.gold, sw: 6 }));
   out.push(T('Peter Naur', 0, y + 194, { font: 'serif', size: 30, italic: true, fill: C.ink2, anchor: 'middle' }));
   out.push(line(-40, y + 222, 40, y + 222, { stroke: C.faint, sw: 2 }));
-  out.push(naurRows(focus, lensIn > 0 ? ly : null));
+  out.push(naurRows(focus, lensIn > 0 ? ly : null, show));
   if (lensIn > 0) {
     // magnifier: a 1.55x copy of the list inside the glass, clipped to the lens
-    const lx = NAUR_LENS_X, R = 48, id = 'naurLensClip';
+    const lx = NAUR_LENS_X, R = 52, id = 'naurLensClip';
     const d = R * 0.7;
     out.push(G({ x: lx, y: ly, s: lerp(0.5, 1, lensIn), o: clamp(lensIn * 2) }, G({ x: -lx, y: -ly }, [
       `<defs><clipPath id="${id}"><circle cx="${r2(lx)}" cy="${r2(ly)}" r="${R}"/></clipPath></defs>`,
@@ -343,21 +348,22 @@ function naurEssayPage(t, o = {}) {
   }
   return out.join('');
 }
-// lens sweep window, shared by render and sfx
-const naurSweep = S => { const a = S.cue('essay') + 0.6; return [a, Math.max(a + 1.2, S.end - 0.5)]; };
+// the headings list in on {essay}; the magnifier arrives on {slow} and sweeps down them (shared by render and sfx)
+const naurSweep = S => { const a = S.cue('slow') - 0.35; return [a, Math.max(a + 1.2, S.end - 0.3)]; };
+const naurRowT = (S, i) => S.cue('essay') - 0.05 + i * 0.08;
 SCENES.naur = {
   render(t, S) {
     const al = S.cue('algol'), bnf = S.cue('bnf'), tu = S.cue('turing'), es = S.cue('essay');
     const l2 = S.line(1).start;
     const X = exitAt(t, S.end - 0.3, 0.4);
     const out = [];
-    const shrink = P(t, l2 - 0.1, 0.8, 'inOut');
+    const shrink = P(t, l2 - 0.35, 0.8, 'inOut');
     // headline
-    const hOut = 1 - P(t, l2 - 0.25, 0.4);
+    const hOut = 1 - P(t, l2 - 0.45, 0.4);
     const eH = enter(t, S.start + 0.02, { dy: 14 });
     out.push(G({ o: eH.o * hOut, y: eH.y - 16 * (1 - hOut) }, T('Peter Naur', 960, 150, { font: 'serif', size: 62, weight: 600, anchor: 'middle' })));
     const eS = enter(t, S.start + 0.3, { dy: 10 });
-    out.push(G({ o: eS.o * hOut, y: eS.y - 16 * (1 - hOut) }, T('1928–2016  ·  Datalogisk Institut, Copenhagen', 960, 198, { size: 26, weight: 500, fill: C.ink2, anchor: 'middle' })));
+    out.push(G({ o: eS.o * hOut, y: eS.y - 16 * (1 - hOut) }, T('1928–2016  ·  Datalogisk Institut, Copenhagen', 960, 206, { size: 30, weight: 500, fill: C.ink2, anchor: 'middle' })));
     // three cards, which later shrink up into a row
     const cards = [
       { cue: al, x: 420, draw: lt => naurAlgolCard(t, { code: P(lt, 0.25, 1.0, 'linear'), hl: P(lt, 0.55, 0.45, 'inOut') }) },
@@ -369,24 +375,26 @@ SCENES.naur = {
       if (e.o <= 0) return;
       const lt = t - (c.cue - 0.3);
       const bob = Math.sin(t * 1.3 + i * 2.1) * 4 * (1 - shrink);
-      const x = lerp(c.x, 760 + i * 200, shrink), y = lerp(565, 160, shrink) + bob + e.y * (1 - shrink);
-      out.push(G({ x, y, s: lerp(1, 0.34, shrink) * e.s, r: lerp(0, [-3, 0, 3][i], shrink), o: e.o }, c.draw(lt)));
+      const x = lerp(c.x, 760 + i * 200, shrink), y = lerp(552, 160, shrink) + bob + e.y * (1 - shrink);
+      out.push(G({ x, y, s: lerp(NAUR_CARD_S, 0.34, shrink) * e.s, r: lerp(0, [-3, 0, 3][i], shrink), o: e.o }, c.draw(lt)));
     });
     // hand labels under cards 1 and 2
     [{ cue: al, x: 420, segs: [{ t: 'edited the report (1960)' }] },
       { cue: bnf, x: 960, segs: [{ t: 'Backus–' }, { t: 'Naur', fill: C.goldDeep }, { t: ' Form' }] }].forEach(l => {
       const p = P(t, l.cue + 0.4, 0.45);
-      if (p > 0) out.push(G({ o: p * (1 - clamp(shrink * 3)), y: (1 - p) * 8 }, richText(l.segs, l.x, 806, { font: 'hand', size: 44, weight: 700, fill: C.ink2, anchor: 'middle' })));
+      if (p > 0) out.push(G({ o: p * (1 - clamp(shrink * 3)), y: (1 - p) * 8 }, richText(l.segs, l.x, 832, { font: 'hand', size: 52, weight: 700, fill: C.ink2, anchor: 'middle' })));
     });
     // the essay itself, with its real section headings and a magnifier sliding down them
-    const eP = enter(t, l2 + 0.12, { dy: 70, d: 0.75, from: 0.95 });
+    const eP = enter(t, l2 + 0.08, { dy: 70, d: 0.7, from: 0.95 });
     if (eP.o > 0) {
       const [sw0, sw1] = naurSweep(S);
       const sweep = P(t, sw0, sw1 - sw0, 'inOutSine');
-      const lensIn = P(t, es + 0.3, 0.45, 'outBack');
-      const ly = lerp(NAUR_ROW_Y(0) - 8, NAUR_ROW_Y(8) - 8, sweep);
-      const focus = i => (lensIn > 0 ? clamp((ly - (NAUR_ROW_Y(i) - 8) + 26) / 26) : 0);
-      out.push(G({ x: 960, y: 592 + eP.y, s: eP.s, r: (1 - eP.p) * 1.5, o: eP.o }, naurEssayPage(t, { ul: P(t, es - 0.15, 0.6, 'inOut'), focus, ly, lensIn })));
+      const lensIn = P(t, sw0 - 0.25, 0.45, 'outBack');
+      const ly = lerp(NAUR_ROW_Y(0) - 9, NAUR_ROW_Y(8) - 9, sweep);
+      const focus = i => (lensIn > 0 ? clamp((ly - (NAUR_ROW_Y(i) - 9) + 28) / 28) : 0);
+      const show = i => P(t, naurRowT(S, i), 0.3, 'out');
+      // drawn first, so the cards shrinking up past it stay on top
+      out.unshift(G({ x: 960, y: 592 + eP.y, s: eP.s, r: (1 - eP.p) * 1.5, o: eP.o }, naurEssayPage(t, { ul: P(t, es - 0.15, 0.6, 'inOut'), focus, ly, lensIn, show })));
     }
     return G({ o: X.o, y: X.y }, out);
   },
@@ -397,9 +405,10 @@ SCENES.naur = {
       { t: S.cue('algol') - 0.3, type: 'pop', pitch: 0.85 }, { t: S.cue('algol') + 0.0, type: 'typing', dur: 0.9, gain: 0.35 },
       { t: S.cue('bnf') - 0.3, type: 'pop', pitch: 1.0 }, { t: S.cue('bnf') + 0.3, type: 'chime', note: 1, gain: 0.6 },
       { t: S.cue('turing') - 0.3, type: 'pop', pitch: 1.12 }, { t: S.cue('turing') - 0.1, type: 'swing', gain: 0.6 },
-      { t: l2 - 0.1, type: 'whoosh', dur: 0.7, gain: 0.5 }, { t: l2 + 0.5, type: 'thud', gain: 0.4 },
+      { t: l2 - 0.35, type: 'whoosh', dur: 0.7, gain: 0.5 }, { t: l2 + 0.6, type: 'thud', gain: 0.4 },
       { t: S.cue('essay') - 0.15, type: 'scribble', dur: 0.55, gain: 0.45 },
-      { t: S.cue('essay') + 0.3, type: 'pop', pitch: 1.25, gain: 0.45 },
+      { t: naurRowT(S, 0), type: 'swish', dur: 0.7, gain: 0.25 },
+      { t: sw0 - 0.25, type: 'pop', pitch: 1.25, gain: 0.45 },
       { t: sw0, type: 'swish', dur: sw1 - sw0, gain: 0.3 },
       ...[0.25, 0.55, 0.85].map((f, i) => ({ t: lerp(sw0, sw1, f), type: 'tick', gain: 0.3, pitch: 1 + i * 0.08 })),
       { t: sw1 - 0.1, type: 'chime', note: 5, gain: 0.45 },
@@ -426,50 +435,56 @@ function conveyor(w, phase) {
   for (let x = phase % gapC; x < w - 20; x += gapC) if (x > 14) out.push(rect(x, -3, 12, 5, { rx: 2, fill: '#6B768C' }));
   return out.join('');
 }
-const VIEWS_BELT = { x: 322, y: 774, w: 560, v: 260 };
+// The production line is drawn in its own space (desk at x 124–320, belt 322–802, y 591–904), then scaled up about
+// its centre (cx, cy) and placed at (x, y). Items rest against the stopper, right to left.
+const VIEWS_BELT = { x: 322, y: 774, w: 480, v: 260 };
+const VIEWS_LEFT = { cx: 463, cy: 748, s: 1.2, x: 510, y: 606 };
+const VIEWS_HEAD = { x: 1440, y: 556, s: 0.88 };
+const VIEWS_SHELF = 904;
 SCENES.views = {
   render(t, S) {
     const prod = S.cue('prod'), texts = S.cue('texts'), tbv = S.cue('tbv'), ins = S.cue('insight'), sec = S.cue('second');
     const X = exitAt(t, S.end - 0.3, 0.4);
     const out = [];
-    // headline, divider and a small "vs" (the chapter chip owns the top-left corner for the first 5 s)
+    // headline, divider, and "vs" between the panel labels (the chapter chip owns the top-left corner for the first 5 s)
     const eH = enter(t, S.start + 0.02, { dy: 14 });
-    out.push(G({ o: eH.o, y: eH.y }, richText([{ t: 'Two views ', fill: C.ink }, { t: 'of programming', fill: C.ink }], 960, 150, { font: 'serif', size: 60, weight: 600, anchor: 'middle' })));
+    out.push(G({ o: eH.o, y: eH.y }, T('Two views of programming', 960, 150, { font: 'serif', size: 60, weight: 600, anchor: 'middle' })));
     const leftDim = 1 - 0.55 * P(t, sec - 0.1, 0.6);
-    out.push(dashLine(960, 250, 960, 940, P(t, S.start + 0.15, 1.1, 'inOut'), { stroke: C.ink3, sw: 3, o: 0.75 }));
+    const vsY = 272;
+    out.push(dashLine(960, vsY + 46, 960, 940, P(t, S.start + 0.15, 1.1, 'inOut'), { stroke: C.ink3, sw: 3, o: 0.75 }));
     const vs = P(t, S.voStart + 0.45, 0.5, 'outBack');
-    if (vs > 0) out.push(G({ x: 960, y: 596, s: vs, o: clamp(vs * 2) * lerp(1, 0.6, 1 - leftDim) }, circle(0, 0, 32, { fill: C.paper, stroke: C.faint, sw: 2.5 }), T('vs', 0, 9, { font: 'serif', size: 30, italic: true, fill: C.ink2, anchor: 'middle' })));
+    if (vs > 0) out.push(G({ x: 960, y: vsY, s: vs * (1 + 0.03 * Math.sin(t * 2.2)), o: clamp(vs * 2) }, circle(0, 0, 40, { fill: C.card, stroke: C.faint, sw: 3 }), T('vs', 0, 11, { font: 'serif', size: 38, italic: true, weight: 600, fill: C.ink2, anchor: 'middle' })));
     // panel labels: both appear, faint, on "two views"; each lights up on its cue
     const lblIn = P(t, S.voStart + 0.55, 0.5);
     const lOn = P(t, prod - 0.25, 0.4), rOn = P(t, tbv - 0.25, 0.4);
-    out.push(G({ o: lblIn * lerp(0.4, 1, lOn) * leftDim }, T('PRODUCTION VIEW', 480, 282, { size: 28, weight: 800, fill: C.ink2, anchor: 'middle', ls: 7 })));
-    out.push(G({ o: lblIn * lerp(0.4, 1, rOn) }, T('THEORY BUILDING VIEW', 1440, 282, { size: 28, weight: 800, fill: mixColor(C.ink3, C.goldDeep, rOn), anchor: 'middle', ls: 7 })));
-    // ---- left panel: a programmer feeds texts onto a conveyor
-    const L = [];
-    const eL = enter(t, prod - 0.3, { d: 0.6 });
-    const B = VIEWS_BELT;
+    out.push(G({ o: lblIn * lerp(0.5, 1, lOn) * lerp(1, 0.8, 1 - leftDim) }, T('PRODUCTION VIEW', 480, vsY + 11, { size: 30, weight: 800, fill: C.ink2, anchor: 'middle', ls: 6 })));
+    out.push(G({ o: lblIn * lerp(0.5, 1, rOn) }, T('THEORY BUILDING VIEW', 1440, vsY + 11, { size: 30, weight: 800, fill: mixColor(C.ink3, C.goldDeep, rOn), anchor: 'middle', ls: 6 })));
+    // ---- left panel: a programmer feeds texts onto a conveyor. It waits, dim, until "production view".
+    const VL = VIEWS_LEFT, B = VIEWS_BELT;
+    const eL = enter(t, S.start + 0.25, { d: 0.6 });
+    const leftO = eL.o * lerp(0.32, 1, P(t, prod - 0.3, 0.5)) * leftDim;
     const stopT = sec - 0.1;
     const tEff = t < stopT ? t : stopT + 0.35 * (1 - Math.pow(1 - clamp((t - stopT) / 0.7), 2));
     const run = Math.max(0, tEff - (prod - 0.3));
-    if (eL.o > 0) {
-      const px = 205;
-      L.push(G({ o: eL.o, y: eL.y }, [
+    if (leftO > 0) {
+      const px = 222;
+      const L = [
         G({ x: px, y: 882 + Math.sin(t * 7) * 1.2, s: 0.95 }, person(t, { shirt: C.blue, skin: C.skin[1], hair: C.hair[1], hairStyle: 1, arms: 'typing', seed: 21, look: t > texts - 0.4 ? 0.6 : 0.2 })),
         G({ x: px, y: 770 }, laptopBack({ w: 132, h: 84 })),
-        G({ x: px, y: 776 }, desk(230)),
+        G({ x: px, y: 776 }, desk(196)),
         G({ x: B.x, y: B.y }, conveyor(B.w, run * B.v)),
         rect(B.x + B.w - 8, B.y - 42, 8, 44, { rx: 3, fill: '#8A93A3' }),
-      ]));
+      ];
       // items ride the belt and queue at the stopper
       const items = [
-        { launch: texts - 0.45, rest: 797, h: 180, draw: () => codeCard({ w: 150, h: 180, seed: 71 }) },
-        { launch: texts + 0.15, rest: 637, h: 172, draw: () => docCard({ w: 140, h: 172, seed: 72, title: 'docs', lines: 5 }) },
-        { launch: texts + 0.75, rest: 482, h: 172, draw: () => specDoc({ w: 140, h: 172, accent: C.coral, lines: 4 }) },
+        { launch: texts - 0.45, rest: 713, h: 180, draw: () => codeCard({ w: 150, h: 180, seed: 71 }) },
+        { launch: texts + 0.15, rest: 560, h: 172, draw: () => docCard({ w: 140, h: 172, seed: 72, title: 'docs', lines: 5 }) },
+        { launch: texts + 0.75, rest: 412, h: 172, draw: () => specDoc({ w: 140, h: 172, accent: C.coral, lines: 4 }) },
       ];
       items.forEach((it, i) => {
         if (t < it.launch) return;
         const lt = t - it.launch;
-        const x0 = 300, xr = Math.min(it.rest, x0 + B.v * Math.max(0, Math.min(tEff, stopT + 99) - it.launch));
+        const x0 = 340, xr = Math.min(it.rest, x0 + B.v * Math.max(0, tEff - it.launch));
         const arrived = x0 + B.v * lt >= it.rest;
         const em = P(t, it.launch, 0.3, 'outBack');
         const tArr = it.launch + (it.rest - x0) / B.v;
@@ -477,33 +492,32 @@ SCENES.views = {
         const jig = arrived ? 0 : Math.sin(t * 22 + i) * 1.2;
         L.push(G({ x: xr, y: B.y - it.h / 2 - 3 + jig, s: lerp(0.35, 1, em) * bump, o: clamp(em * 2) }, it.draw()));
       });
-      const lab = P(t, texts + 1.15, 0.5);
-      if (lab > 0) L.push(G({ o: lab, y: (1 - lab) * 8 }, T('output: a program + texts', 600, 968, { font: 'hand', size: 46, weight: 700, fill: C.ink2, anchor: 'middle' })));
+      out.push(G({ o: leftO }, G({ x: VL.x, y: VL.y + eL.y, s: VL.s }, G({ x: -VL.cx, y: -VL.cy }, L))));
     }
-    out.push(G({ o: leftDim }, L));
-    // ---- right panel: a head, and the theory it forms
-    const hx = 1420, hy = 572, hs = 0.72;
-    const eHead = enter(t, tbv - 0.3, { d: 0.65, from: 0.9 });
+    const lab = P(t, texts + 1.15, 0.5);
+    if (lab > 0) out.push(G({ o: lab * leftDim, y: (1 - lab) * 8 }, T('output: a program + texts', 510, 880, { font: 'hand', size: 50, weight: 700, fill: C.ink2, anchor: 'middle' })));
+    // ---- right panel: a head, and the theory it forms. It waits as a faint silhouette until "theory building view".
+    const { x: hx, y: hy, s: hs } = VIEWS_HEAD;
+    const eHead = enter(t, S.start + 0.45, { d: 0.65, from: 0.94 });
+    const headOn = P(t, tbv - 0.3, 0.5);
     const glowUp = P(t, sec - 0.1, 0.7);
     if (eHead.o > 0) {
       const breathe = 1 + 0.012 * Math.sin(t * 1.7);
-      out.push(G({ x: hx, y: hy + eHead.y, s: hs * eHead.s * breathe, o: eHead.o },
+      out.push(G({ x: hx, y: hy + eHead.y, s: hs * eHead.s * breathe * pulse(t, tbv - 0.05, 0.5, 0.04), o: eHead.o * lerp(0.22, 1, headOn) },
         glowUp > 0 ? circle(-10, -30, 330, { fill: 'url(#gGlow)', o: 0.55 * glowUp * (0.9 + 0.1 * Math.sin(t * 3)) }) : '',
         bigHead(t),
         constellation(t, HEAD_K(), { t0: ins - 0.3, dur: 2.0, size: 7.5, lineW: 2.6, glow: 1 + 0.6 * glowUp })));
     }
     const eI = P(t, ins + 0.35, 0.5);
-    if (eI > 0) {
-      out.push(G({ o: eI, y: (1 - eI) * 8 }, T('an insight, a theory', 1668, 404, { font: 'hand', size: 44, weight: 700, fill: C.goldDeep, anchor: 'middle' })));
-      out.push(handArrow(1600, 424, 1500, 482, P(t, ins + 0.5, 0.45, 'inOut'), { color: C.goldDeep, bend: 0.3, sw: 3.5, head: 14 }));
-    }
+    if (eI > 0) out.push(G({ o: eI, y: (1 - eI) * 8 }, T('an insight, a theory', hx, 356, { font: 'hand', size: 50, weight: 700, fill: C.goldDeep, anchor: 'middle' })));
     // the texts, small, on a shelf under the head: secondary
+    const shY = VIEWS_SHELF;
     const eS = P(t, sec - 0.3, 0.45);
-    if (eS > 0) out.push(G({ o: eS }, line(1250, 888, 1630, 888, { stroke: C.ink3, sw: 5 }), line(1292, 888, 1292, 912, { stroke: C.ink3, sw: 4 }), line(1588, 888, 1588, 912, { stroke: C.ink3, sw: 4 })));
+    if (eS > 0) out.push(G({ o: eS }, line(hx - 190, shY, hx + 190, shY, { stroke: C.ink3, sw: 5 }), line(hx - 148, shY, hx - 148, shY + 24, { stroke: C.ink3, sw: 4 }), line(hx + 148, shY, hx + 148, shY + 24, { stroke: C.ink3, sw: 4 })));
     const mini = [
-      { x: 1330, h: 180, draw: () => codeCard({ w: 150, h: 180, seed: 71 }) },
-      { x: 1440, h: 172, draw: () => docCard({ w: 140, h: 172, seed: 72, lines: 5 }) },
-      { x: 1550, h: 172, draw: () => docCard({ w: 140, h: 172, seed: 11, lines: 4, checks: true, accent: C.coral }) },
+      { x: hx - 110, h: 180, draw: () => codeCard({ w: 150, h: 180, seed: 71 }) },
+      { x: hx, h: 172, draw: () => docCard({ w: 140, h: 172, seed: 72, lines: 5 }) },
+      { x: hx + 110, h: 172, draw: () => docCard({ w: 140, h: 172, seed: 11, lines: 4, checks: true, accent: C.coral }) },
     ];
     mini.forEach((m, i) => {
       const t0 = sec - 0.2 + i * 0.14;
@@ -511,10 +525,10 @@ SCENES.views = {
       if (fall <= 0) return;
       const lt = t - t0 - 0.35;
       const hop = lt > 0 ? Math.abs(Math.exp(-7 * lt) * Math.sin(lt * 22)) * 10 : 0;
-      out.push(G({ x: m.x, y: 886 - m.h * 0.25 - (1 - fall) * 170 - hop, s: 0.5, r: (1 - fall) * (i - 1) * 14, o: clamp(fall * 4) }, m.draw()));
+      out.push(G({ x: m.x, y: shY - 2 - m.h * 0.25 - (1 - fall) * 170 - hop, s: 0.5, r: (1 - fall) * (i - 1) * 14, o: clamp(fall * 4) }, m.draw()));
     });
     const eSec = P(t, sec + 0.35, 0.45);
-    if (eSec > 0) out.push(G({ o: eSec, y: (1 - eSec) * 8 }, T('secondary', 1440, 962, { font: 'serif', size: 40, italic: true, fill: C.ink2, anchor: 'middle' })));
+    if (eSec > 0) out.push(G({ o: eSec, y: (1 - eSec) * 8 }, T('secondary', hx, shY + 64, { font: 'serif', size: 46, italic: true, fill: C.ink2, anchor: 'middle' })));
     return G({ o: X.o, y: X.y }, out);
   },
   sfx(S) {
@@ -535,7 +549,7 @@ SCENES.views = {
 // ================================================================== MATCHING
 const MATCH_WY = [372, 516, 660, 804];   // world item centres
 const MATCH_CY = [392, 516, 640, 764];   // code line centres
-const MATCH_WX = 450, MATCH_TX1 = 520, MATCH_TX2 = 1168, MATCH_CODE_X = 1200;
+const MATCH_WX = 450, MATCH_TX1 = 548, MATCH_TX2 = 1168, MATCH_CODE_X = 1200, MATCH_ICON_S = 1.2;
 const mseg = arr => arr.map(([s, fill]) => ({ t: s, fill }));
 const MATCH_LINES = [
   { old: mseg([['ledger', C.ink], ['.post', C.blue], ['(payment)', C.ink]]) },
@@ -571,7 +585,7 @@ SCENES.matching = {
     // ---- the world panel
     const eW = enter(t, S.start + 0.1, { d: 0.6 });
     out.push(G({ o: eW.o, y: eW.y }, rect(200, 300, 540, 600, { rx: 30, fill: C.tealLight, o: 0.2 }), rect(200, 300, 540, 600, { rx: 30, stroke: C.teal, sw: 2.5, o: 0.3 }),
-      T('THE WORLD', 470, 270, { size: 26, weight: 800, fill: C.tealDark, anchor: 'middle', ls: 6 })));
+      T('THE WORLD', 470, 272, { size: 28, weight: 800, fill: C.tealDark, anchor: 'middle', ls: 6 })));
     const fast = P(t, M.change[2] - 0.1, 0.4);
     const gt = t + 4 * Math.max(0, t - M.change[2]);          // gears run 5x faster after the change
     const newP = P(t, M.change[1] - 0.25, 0.6, 'out');        // a new person arrives
@@ -587,7 +601,7 @@ SCENES.matching = {
     ];
     icons.forEach((ic, i) => {
       const e = enter(t, S.start + 0.3 + i * 0.12, { d: 0.5 });
-      if (e.o > 0) out.push(G({ x: MATCH_WX, y: MATCH_WY[i] + e.y, s: e.s, o: e.o }, ic()));
+      if (e.o > 0) out.push(G({ x: MATCH_WX, y: MATCH_WY[i] + e.y, s: e.s * MATCH_ICON_S, o: e.o }, ic()));
     });
     // ---- the symbols panel: a code card
     const eC = enter(t, S.start + 0.35, { d: 0.6 });
@@ -602,7 +616,7 @@ SCENES.matching = {
       T('program', cx0 + cw - 24, cy0 + 34, { font: 'mono', size: 22, weight: 600, fill: C.ink3, anchor: 'end' }),
       line(cx0 + 20, cy0 + 52, cx0 + cw - 20, cy0 + 52, { stroke: C.faint, sw: 2 }),
       ...fills.map(([y, ind, w, col]) => rect(MATCH_CODE_X + ind * 30, y - 5, (cw - 110) * w, 10, { rx: 5, fill: col, o: 0.3 }))];
-    out.push(G({ o: eC.o, y: eC.y }, card, T('SYMBOLS', 1450, 270, { size: 26, weight: 800, fill: C.blue, anchor: 'middle', ls: 6 })));
+    out.push(G({ o: eC.o, y: eC.y }, card, T('SYMBOLS', 1450, 272, { size: 28, weight: 800, fill: C.blue, anchor: 'middle', ls: 6 })));
     // ---- rows: code line, thread, nodes, mismatch and fix
     MATCH_LINES.forEach((ln, i) => {
       const y = MATCH_CY[i], wy = MATCH_WY[i];
@@ -665,9 +679,9 @@ SCENES.matching = {
     // the modification loop
     const lp = P(t, M.md + 0.05, 0.5, 'outBack');
     if (lp > 0) {
-      const lx = 855, ly = 948;
-      out.push(G({ x: lx, y: ly, s: 0.66 * lp, o: clamp(lp * 2) }, loopArrows(t, { r: 44, color: C.goldDeep, spin: Math.max(0, t - M.md) * 150 })));
-      out.push(G({ o: clamp(lp * 2), y: (1 - clamp(lp)) * 8 }, T('modification', lx + 48, ly + 14, { font: 'hand', size: 46, weight: 700, fill: C.goldDeep })));
+      const lx = 842, ly = 950;
+      out.push(G({ x: lx, y: ly, s: 0.74 * lp, o: clamp(lp * 2) }, loopArrows(t, { r: 44, color: C.goldDeep, spin: Math.max(0, t - M.md) * 150 })));
+      out.push(G({ o: clamp(lp * 2), y: (1 - clamp(lp)) * 8 }, T('modification', lx + 52, ly + 15, { font: 'hand', size: 50, weight: 700, fill: C.goldDeep })));
     }
     return G({ o: X.o, y: X.y }, out);
   },
