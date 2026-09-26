@@ -17,7 +17,10 @@ if ! .venv/bin/python -c "import en_core_web_sm" 2>/dev/null; then
     https://huggingface.co/spacy/en_core_web_sm/resolve/main/en_core_web_sm-any-py3-none-any.whl
   .venv/bin/pip install -q "$tmp/en_core_web_sm-3.7.1-py3-none-any.whl"
 fi
-# Playwright drives headless Chromium to render frames
-node -e "require('playwright')" 2>/dev/null || npm install -g playwright
-[ -n "${PLAYWRIGHT_BROWSERS_PATH:-}" ] || npx playwright install chromium
+# Playwright drives headless Chromium to render frames. video/render.js accepts a local or a global
+# install; reuse whichever exists so a preinstalled browser build is not orphaned by an upgrade.
+if ! node -e "try{require('playwright')}catch(e){require(require('child_process').execSync('npm root -g').toString().trim()+'/playwright')}" 2>/dev/null; then
+  npm install -g playwright@1.56.1
+  npx -y playwright@1.56.1 install chromium
+fi
 echo "setup done"

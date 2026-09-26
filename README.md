@@ -5,6 +5,7 @@ A 90-second animated explainer about Peter Naur's 1985 essay **"Programming as T
 ▶ **Video:** [`out/specs-as-theory-building.mp4`](out/specs-as-theory-building.mp4) (1920×1080, 30 fps, about 90 s, captions embedded; sidecar [`.srt`](out/specs-as-theory-building.srt))
 📝 **Script, with Naur's own words and page numbers:** [`script/script.md`](script/script.md)
 🎞 **Storyboard:** [`storyboard/README.md`](storyboard/README.md)
+🛠 **Make another one:** [`docs/playbook.md`](docs/playbook.md) · [`docs/engine.md`](docs/engine.md) · [`docs/behind-the-scenes.md`](docs/behind-the-scenes.md)
 
 ![Storyboard contact sheet](storyboard/contact-sheet.jpg)
 
@@ -34,6 +35,8 @@ Everything is generated from source in this repo: script, voice, timing, illustr
 | Sound | `pipeline/mix.py` | Procedural music bed and cue-synced sound effects, ducked under the narration |
 | Encode | `pipeline/encode.py` | H.264 and AAC, loudness-normalized to −16 LUFS, soft subtitles |
 | Storyboard | `pipeline/storyboard.py` | Keyframes, contact sheet and `storyboard/README.md`, taken from the actual cut |
+| Review | `tools/review.py` | Labelled 4×4 contact sheets of cues, transitions, the whole cut, or the encoded MP4, for visual QA without watching |
+| Page | `publish/page.py` + `template.html` | Web encode, poster, keyframes and a filled page in `build/page/`, ready to publish as an Artifact |
 
 Preview in a browser: run `python3 -m http.server` from the repo root, then open `http://localhost:8000/video/index.html`. That gives a scrubbable player that plays `build/mix.wav` in sync.
 
@@ -56,6 +59,10 @@ VOICE=openrouter ./build.sh --model hexgrad/kokoro-82m --voice af_heart --style 
 ```
 
 Timing adapts automatically. Each line is re-aligned, so the animation re-times itself to the new voice. A slower voice makes the video longer; the stand-in runs at about 186 wpm (90 s total).
+
+## Reusing the kit
+
+This repo is also a reusable kit. To make another explainer, follow [`docs/playbook.md`](docs/playbook.md): preflight, research, script, voice, storyboard, scenes, render, QA, ship, with a quality gate for each phase. [`docs/engine.md`](docs/engine.md) documents the animation API and the recipes the scenes use. [`docs/behind-the-scenes.md`](docs/behind-the-scenes.md) is the retrospective: decisions, timeline, what went well, and the 22 problems hit and how each was fixed. Coding agents also get [`CLAUDE.md`](CLAUDE.md) and the `explainer-video` skill in `.claude/skills/`.
 
 ## Sources
 

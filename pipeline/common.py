@@ -18,6 +18,11 @@ def load_narration():
     return json.loads(NARRATION.read_text())
 
 
+def slug(narr):
+    """Output file stem, e.g. out/<slug>.mp4. Set "slug" in narration.json; defaults to the title."""
+    return narr.get("slug") or re.sub(r"[^a-z0-9]+", "-", narr["title"].lower()).strip("-")
+
+
 def clean_text(text):
     """Line text with cue markers removed (what the viewer hears / reads)."""
     return re.sub(r"\s+", " ", CUE_RE.sub("", text)).strip()

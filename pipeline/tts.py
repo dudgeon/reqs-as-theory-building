@@ -84,7 +84,7 @@ def synth_openrouter(text, cfg):
         "Authorization": f"Bearer {key}",
         "Content-Type": "application/json",
         "HTTP-Referer": "https://github.com/dudgeon/reqs-as-theory-building",
-        "X-Title": "Specs as Theory Building",
+        "X-Title": load_narration().get("title", "Explainer video"),
     }
     for attempt in range(4):
         r = requests.post(OPENROUTER_URL, headers=headers, json=body, timeout=300)

@@ -1,5 +1,6 @@
 {
   "title": "Specs as Theory Building",
+  "slug": "specs-as-theory-building",
   "fps": 30,
   "leadIn": 3.8,
   "tail": 3.3,
@@ -53,6 +54,7 @@
     },
     {
       "id": "compiler",
+      "label": "Naur's compiler",
       "lines": [
         {
           "text": "Naur saw successive teams {inherit}inherit a compiler, {docs}with full code and full docs, and still {patch}patch its design apart."

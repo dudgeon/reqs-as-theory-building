@@ -1,0 +1,291 @@
+<!--
+  Artifact page template for the explainer. `python publish/page.py` fills the {{PLACEHOLDERS}}
+  from build/timeline.json, out/<slug>.srt and pipeline/storyboard.py, and writes build/page/.
+  Everything else here is hand-written content for this video: edit it freely for the next one.
+  Plain HTML on purpose: no templating language, so CSS/JS braces need no escaping.
+-->
+<title>Specs as Theory Building</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&display=swap">
+<style>
+  :root {
+    --bg: #F1F3F7;
+    --surface: #FFFFFF;
+    --ink: #1C2638;
+    --muted: #566175;
+    --rule: #D5DBE5;
+    --gold: #93600B;
+    --star: #E9A93A;
+    --coral: #BA4A27;
+    --teal: #1E7064;
+    --code-bg: #1C2638;
+    --code-ink: #E9E3D5;
+    --shadow: 0 1px 2px rgba(28, 38, 56, .06), 0 12px 32px rgba(28, 38, 56, .10);
+    --serif: "Newsreader", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+    --sans: "IBM Plex Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #101726; --surface: #182134; --ink: #ECE6D8; --muted: #9CA6B8; --rule: #28334B;
+      --gold: #F2B84B; --star: #F2B84B; --coral: #F0896A; --teal: #6FCABB;
+      --code-bg: #0B111D; --code-ink: #E9E3D5; --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 16px 40px rgba(0, 0, 0, .35);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #101726; --surface: #182134; --ink: #ECE6D8; --muted: #9CA6B8; --rule: #28334B;
+    --gold: #F2B84B; --star: #F2B84B; --coral: #F0896A; --teal: #6FCABB;
+    --code-bg: #0B111D; --code-ink: #E9E3D5; --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 16px 40px rgba(0, 0, 0, .35);
+    color-scheme: dark;
+  }
+
+  body { background: var(--bg); color: var(--ink); font: 400 1.0625rem/1.65 var(--sans); padding-inline: 16px; padding-block: 0 72px; }
+  .col { max-width: 42rem; margin-inline: auto; }
+  .wide { max-width: 66rem; margin-inline: auto; }
+  main { display: grid; gap: 4.5rem; }
+  section { display: grid; gap: 1.1rem; }
+  a { color: var(--teal); text-underline-offset: 3px; }
+  a:focus-visible, video:focus-visible { outline: 2px solid var(--star); outline-offset: 3px; }
+  h1, h2, h3 { font-family: var(--serif); font-weight: 500; text-wrap: balance; margin: 0; }
+  p, ol, ul, figure, blockquote, table, pre { margin: 0; }
+  .label { font: 500 .78rem/1.3 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  .tc { font: 500 .78rem/1.3 var(--mono); color: var(--gold); font-variant-numeric: tabular-nums; letter-spacing: .02em; }
+
+  /* header */
+  header { padding-block: 3.5rem 2rem; display: grid; gap: 1.1rem; }
+  .masthead { display: flex; align-items: center; gap: .9rem; flex-wrap: wrap; }
+  .mark { width: 44px; height: 44px; flex: none; }
+  h1 { font-size: clamp(2.5rem, 7vw, 4.6rem); line-height: 1.02; letter-spacing: -.015em; }
+  h1 em { color: var(--coral); }
+  .dek { font-family: var(--serif); font-size: clamp(1.2rem, 2.6vw, 1.45rem); line-height: 1.45; color: var(--muted); max-width: 38rem; }
+
+  /* video */
+  .player { display: grid; gap: .7rem; }
+  video { width: 100%; height: auto; aspect-ratio: 16 / 9; display: block; border-radius: 12px; background: #0B111D; box-shadow: var(--shadow); }
+  .frame { position: relative; }
+  .cc { position: absolute; left: 50%; bottom: 14%; transform: translateX(-50%); max-width: 88%; width: max-content; text-align: center; pointer-events: none;
+        background: rgba(8, 12, 20, .78); color: #F4F1EA; font: 500 clamp(.85rem, 1.9vw, 1.2rem)/1.4 var(--sans); padding: .35em .75em; border-radius: 6px; }
+  .under { display: flex; gap: .9rem; align-items: flex-start; }
+  .under p { font-size: .9rem; color: var(--muted); }
+  #ccToggle { flex: none; font: 500 .78rem/1 var(--mono); letter-spacing: .04em; color: var(--ink); background: var(--surface); border: 1px solid var(--rule); border-radius: 999px; padding: .5rem .8rem; cursor: pointer; }
+  #ccToggle[aria-pressed="false"] { color: var(--muted); }
+  #ccToggle:focus-visible { outline: 2px solid var(--star); outline-offset: 2px; }
+  @media (max-width: 30rem) { .under { flex-direction: column; } }
+
+  h2 { font-size: clamp(1.7rem, 4vw, 2.2rem); line-height: 1.15; }
+  .lede { font-size: 1.1rem; }
+
+  /* the argument */
+  .moves { list-style: none; padding: 0; display: grid; gap: 1.25rem; counter-reset: move; }
+  .moves li { display: grid; grid-template-columns: 2.2rem 1fr; gap: .2rem 1rem; counter-increment: move; }
+  .moves li::before { content: counter(move); font: 500 1.6rem/1 var(--serif); color: var(--gold); grid-row: span 2; padding-top: .15rem; }
+  .moves h3 { font-size: 1.3rem; line-height: 1.3; }
+
+  /* habits */
+  .habits { list-style: none; padding: 0; display: grid; gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: 12px; overflow: hidden; }
+  .habits li { background: var(--surface); padding: 1.1rem 1.25rem; display: grid; gap: .3rem; }
+  .habits .top { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; flex-wrap: wrap; }
+  .habits h3 { font-size: 1.28rem; }
+  .tag { font: 500 .74rem/1 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--gold); border: 1px solid currentColor; border-radius: 999px; padding: .35rem .6rem; white-space: nowrap; }
+  .habits p { color: var(--muted); font-size: .98rem; }
+  .bnf { display: grid; gap: .6rem; }
+  pre { background: var(--code-bg); color: var(--code-ink); border-radius: 12px; padding: 1.1rem 1.25rem; overflow-x: auto; font: 400 .88rem/1.7 var(--mono); }
+  pre b { color: #F2B84B; font-weight: 500; }
+  pre i { color: #8FD3C8; font-style: normal; }
+  .bnf p { font-size: .9rem; color: var(--muted); }
+
+  /* mapping table */
+  .scroll { overflow-x: auto; border: 1px solid var(--rule); border-radius: 12px; background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; min-width: 40rem; font-size: .95rem; }
+  th, td { text-align: left; vertical-align: top; padding: .8rem 1rem; border-bottom: 1px solid var(--rule); }
+  tr:last-child td { border-bottom: 0; }
+  th { font: 500 .74rem/1.3 var(--mono); letter-spacing: .07em; text-transform: uppercase; color: var(--muted); background: var(--bg); }
+  td:first-child { font-family: var(--serif); font-size: 1.05rem; }
+  td:last-child { color: var(--ink); }
+  td strong { color: var(--gold); font-weight: 600; }
+
+  /* quotes */
+  .quotes { display: grid; gap: 1.6rem; }
+  blockquote { border-left: 2px solid var(--star); padding-left: 1.1rem; display: grid; gap: .45rem; }
+  blockquote p { font: italic 400 1.22rem/1.5 var(--serif); }
+  blockquote cite { font: 500 .78rem/1.3 var(--mono); font-style: normal; color: var(--muted); letter-spacing: .02em; }
+
+  /* transcript */
+  .transcript { list-style: none; padding: 0; display: grid; gap: .55rem; }
+  .transcript li { display: grid; grid-template-columns: 3.2rem 1fr; gap: 1rem; align-items: baseline; }
+
+  /* storyboard */
+  .beats { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr)); gap: 1.5rem 1.25rem; }
+  .beat { display: grid; gap: .55rem; align-content: start; }
+  .beat img { width: 100%; height: auto; aspect-ratio: 16 / 9; border-radius: 8px; border: 1px solid var(--rule); display: block; }
+  .beat figcaption { font-size: .9rem; line-height: 1.5; color: var(--muted); display: grid; gap: .25rem; }
+  .beat figcaption strong { color: var(--ink); font-weight: 600; }
+
+  .about { background: var(--surface); border: 1px solid var(--rule); border-radius: 12px; padding: 1.25rem 1.4rem; display: grid; gap: .8rem; font-size: .98rem; }
+  .about code { font: 400 .86em var(--mono); background: var(--bg); padding: .1em .35em; border-radius: 4px; }
+  footer { margin-top: 4rem; font-size: .85rem; color: var(--muted); }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .mark circle { animation: twinkle 3.2s ease-in-out infinite; }
+    .mark circle:nth-child(3n) { animation-delay: -1.1s; }
+    .mark circle:nth-child(3n+1) { animation-delay: -2.2s; }
+  }
+  @keyframes twinkle { 50% { opacity: .45; } }
+</style>
+
+<header class="col">
+  <div class="masthead">
+    <svg class="mark" viewBox="0 0 44 44" aria-hidden="true">
+      <g stroke="var(--star)" stroke-width="1.2" stroke-linecap="round" opacity=".75">
+        <line x1="7" y1="30" x2="16" y2="18"/><line x1="16" y1="18" x2="27" y2="23"/><line x1="27" y1="23" x2="37" y2="10"/><line x1="27" y1="23" x2="33" y2="36"/><line x1="16" y1="18" x2="19" y2="6"/>
+      </g>
+      <g fill="var(--star)">
+        <circle cx="7" cy="30" r="2.4"/><circle cx="16" cy="18" r="3"/><circle cx="27" cy="23" r="2.6"/><circle cx="37" cy="10" r="2.2"/><circle cx="33" cy="36" r="2.2"/><circle cx="19" cy="6" r="1.8"/>
+      </g>
+    </svg>
+    <span class="label">An animated explainer · {{RUNTIME}} · after Peter Naur, 1985</span>
+  </div>
+  <h1><em>Specs</em> as Theory Building</h1>
+  <p class="dek">Peter Naur argued that the real product of programming is the theory in the programmers' heads. Now that agents write code from specs, his argument describes the job of whoever writes the spec.</p>
+</header>
+
+<main>
+  <div class="wide player">
+    <div class="frame">
+      <video id="film" controls playsinline preload="metadata" poster="poster.jpg" aria-label="Specs as Theory Building, animated explainer">
+        <source src="{{VIDEO}}" type="video/mp4">
+      </video>
+      <div class="cc" id="cc" hidden></div>
+    </div>
+    <div class="under">
+      <button id="ccToggle" type="button" aria-pressed="true">Captions on</button>
+      <p>This cut uses a local stand-in voice (Kokoro-82M) because no OpenRouter key was available when it was rendered. See <a href="#about">About this cut</a>.</p>
+    </div>
+  </div>
+
+  <section class="col" aria-labelledby="argument">
+    <h2 id="argument">The argument in four steps</h2>
+    <ol class="moves">
+      <li><h3>A program is a theory held by people</h3><p>For Naur, programming means building a theory, in the philosopher Gilbert Ryle's sense, of how part of the world will be handled by a program. Whoever holds it knows how the program works and can explain it, justify it and answer questions about it. The code and the documents, specifications included, are secondary products.</p></li>
+      <li><h3>Documents can't carry the theory</h3><p>In Naur's compiler case, a second team received full code, annotated listings, design notes and advice, and still proposed patches that would have wrecked the design. Theory passes between people who work together. When the team that holds it disperses, the program is dead, even if it keeps running.</p></li>
+      <li><h3>Agents make text nearly free</h3><p>Naur pointed out that the hope for cheap changes assumes text editing is the main cost, and he said that assumption is false. Agents cut the cost of producing text almost to zero. The expensive part, the theory, is still there.</p></li>
+      <li><h3>So specifying is where the theory gets built</h3><p>When agents write the code, the spec becomes the main thing people write. Writing it, by chasing down the rules, systems and stakeholders it depends on, is how a PM builds the theory. The agent receives the spec. The theory stays with the people who did that work.</p></li>
+    </ol>
+  </section>
+
+  <section class="col" aria-labelledby="habits">
+    <h2 id="habits">Four habits for PMs writing specs</h2>
+    <p class="lede">Each habit trains one of the abilities Naur says separate someone who holds a theory from someone who only has the documents.</p>
+    <ol class="habits">
+      <li><div class="top"><h3>Trace every requirement to its source</h3><span class="tag">Naur: map</span></div><p>Name the rule, the system and the owner behind each requirement, and list what is deliberately out of scope. Naur: deciding which parts of the world are relevant "can only be made by someone who understands the whole world."</p></li>
+      <li><div class="top"><h3>Write down the why, and what you rejected</h3><span class="tag">Naur: justify</span></div><p>An agent can implement a list of requirements. It can't infer the reasons behind them. Record the reasoning and the alternatives you turned down, so reviewers and agents can check changes against intent.</p></li>
+      <li><div class="top"><h3>Rehearse change before sign-off</h3><span class="tag">Naur: adapt</span></div><p>Run two or three likely changes through the spec, such as a new regulatory reading or a platform migration. If a change fits the existing design, the theory is sound. If it needs a patch, the theory has a gap.</p></li>
+      <li><div class="top"><h3>Sit with the people who hold the theory</h3><span class="tag">Keep it alive</span></div><p>Shadow operations, sit with compliance, pair with platform engineers. Treat documents as evidence, not the theory. Then keep those people in the loop while agents build, because a program nobody can change intelligently is already dead.</p></li>
+    </ol>
+    <div class="bnf">
+      <pre aria-label="The four habits written as a grammar in Backus–Naur Form"><b>&lt;spec&gt;</b>             ::= <b>&lt;requirement&gt;</b> { <b>&lt;requirement&gt;</b> } <b>&lt;change-rehearsal&gt;</b>
+<b>&lt;requirement&gt;</b>      ::= <b>&lt;what&gt;</b> <b>&lt;why&gt;</b> <b>&lt;source&gt;</b> { <b>&lt;rejected-option&gt;</b> }
+<b>&lt;source&gt;</b>           ::= <b>&lt;rule&gt;</b> | <b>&lt;system&gt;</b> | <b>&lt;owner&gt;</b>
+<b>&lt;change-rehearsal&gt;</b> ::= { <b>&lt;likely-change&gt;</b> <i>"→"</i> ( <i>"fits"</i> | <i>"needs a patch"</i> ) }</pre>
+      <p>The same habits as a grammar, in Backus–Naur Form, the notation that carries Naur's name.</p>
+    </div>
+  </section>
+
+  <section class="wide" aria-labelledby="mapping">
+    <div class="col"><h2 id="mapping">Why specs now play the part Naur gave to programming</h2></div>
+    <div class="scroll">
+      <table>
+        <thead><tr><th scope="col">Naur, 1985</th><th scope="col">With coding agents</th><th scope="col">What the PM does</th></tr></thead>
+        <tbody>
+          <tr><td>Program text is a secondary product of theory building</td><td>The spec is the main text people write, and agents turn it into code</td><td>Treat the spec as the <strong>handoff</strong>. It carries part of the theory, never all of it.</td></tr>
+          <tr><td>Text manipulation was never the main cost</td><td>Code generation is close to free</td><td>Spend the time on the theory: which rules, systems and people matter, and how they connect</td></tr>
+          <tr><td>Map each part of the program to the world</td><td>An agent can't judge which parts of the world are relevant</td><td><strong>Trace</strong> each requirement to its rule, system and owner</td></tr>
+          <tr><td>Justify why each part is the way it is</td><td>An agent sees the what, not the why</td><td><strong>Write down the why</strong> and the options you rejected</td></tr>
+          <tr><td>Fit modifications to the theory, or they become patches</td><td>Agents produce changes that are correct but inconsistent with the design</td><td><strong>Rehearse change</strong>: fit, or patch?</td></tr>
+          <tr><td>Theory transfers through close contact, not documents</td><td>Handing an agent a spec is a transfer by document alone</td><td><strong>Sit with</strong> compliance, operations and platform engineers</td></tr>
+          <tr><td>A program dies when its theory-holders leave</td><td>Generated code with nobody who understands it is dead from the start</td><td>Keep theory-holders <strong>in the loop</strong> and in charge of changes</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="col" aria-labelledby="words">
+    <h2 id="words">Naur, in his own words</h2>
+    <div class="quotes">
+      <blockquote><p>"The proper, primary aim of programming is, not to produce programs, but to have the programmers build theories of the manner in which the problems at hand are solved by program execution."</p><cite>Abstract, p. 253</cite></blockquote>
+      <blockquote><p>"A person who has or possesses a theory in this sense knows how to do certain things and in addition can support the actual doing with explanations, justifications, and answers to queries, about the activity of concern."</p><cite>§3, on Ryle's notion of theory, p. 255</cite></blockquote>
+      <blockquote><p>"The theory built by the programmers has primacy over such other products as program texts, user documentation, and additional documentation such as specifications."</p><cite>§4, pp. 255–256</cite></blockquote>
+      <blockquote><p>"For this support to be valid it must clearly be assumed that the dominating cost is one of text manipulation. … On the Theory Building View this whole argument is false."</p><cite>§5, on the cost of modifications, p. 257</cite></blockquote>
+      <blockquote><p>"The death of a program happens when the programmer team possessing its theory is dissolved. A dead program may continue to be used for execution in a computer and to produce useful results."</p><cite>§6, p. 258</cite></blockquote>
+      <blockquote><p>"What is required is that the new programmer has the opportunity to work in close contact with the programmers who already possess the theory."</p><cite>§6, p. 258</cite></blockquote>
+    </div>
+    <p class="label">Peter Naur, "Programming as Theory Building," Microprocessing and Microprogramming 15 (1985): 253–261</p>
+  </section>
+
+  <section class="col" aria-labelledby="transcript">
+    <h2 id="transcript">Transcript</h2>
+    <ol class="transcript">
+{{TRANSCRIPT}}
+    </ol>
+  </section>
+
+  <section class="wide" aria-labelledby="storyboard">
+    <div class="col"><h2 id="storyboard">Storyboard</h2></div>
+    <div class="beats">
+{{BEATS}}
+    </div>
+  </section>
+
+  <section class="col" aria-labelledby="about">
+    <h2 id="about">About this cut</h2>
+    <div class="about">
+      <p>Everything is generated from code: the script, word-aligned timing, hand-coded vector illustrations, a small SVG animation engine rendered frame by frame in headless Chromium, a procedural music bed, and sound effects placed on animation cues.</p>
+      <p><strong>Voice.</strong> The pipeline synthesizes narration through OpenRouter's text-to-speech endpoint. The default is <code>google/gemini-3.8-flash-tts</code> with voice <code>Charon</code>. No OpenRouter key was available in the build environment, so this cut uses a local stand-in, <code>hexgrad/Kokoro-82M</code> (voice <code>af_heart</code>), the same model OpenRouter hosts as <code>hexgrad/kokoro-82m</code>. To re-render with an OpenRouter voice, set <code>OPENROUTER_API_KEY</code> and run <code>./build.sh</code>. The animation re-times itself to the new narration.</p>
+      <p><strong>Source.</strong> <a href="https://github.com/dudgeon/reqs-as-theory-building/tree/claude/tender-wozniak-70qmbp">dudgeon/reqs-as-theory-building</a>. It contains the script with page references, the storyboard, the render pipeline and the 1080p master.</p>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  const CUES = {{CUES_JSON}};
+  const film = document.getElementById('film');
+  const box = document.getElementById('cc');
+  const btn = document.getElementById('ccToggle');
+  let on = true, nativeTrack = null;
+  const stamp = t => new Date(t * 1000).toISOString().slice(11, 23);
+  try {
+    const vtt = 'WEBVTT\n\n' + CUES.map(c => stamp(c[0]) + ' --> ' + stamp(c[1]) + '\n' + c[2]).join('\n\n') + '\n';
+    const tr = document.createElement('track');
+    tr.kind = 'captions'; tr.srclang = 'en'; tr.label = 'English';
+    tr.src = URL.createObjectURL(new Blob([vtt], { type: 'text/vtt' }));
+    tr.addEventListener('load', () => { nativeTrack = tr.track; sync(); });
+    film.appendChild(tr);
+    tr.track.mode = 'hidden';
+  } catch (e) { nativeTrack = null; }
+  function sync() {
+    if (nativeTrack) { nativeTrack.mode = on ? 'showing' : 'hidden'; box.hidden = true; return; }
+    const t = film.currentTime;
+    const c = on ? CUES.find(k => t >= k[0] && t < k[1]) : null;
+    box.hidden = !c;
+    if (c && box.textContent !== c[2]) box.textContent = c[2];
+  }
+  let raf = 0;
+  const loop = () => { sync(); raf = film.paused ? 0 : requestAnimationFrame(loop); };
+  film.addEventListener('play', () => { if (!raf) raf = requestAnimationFrame(loop); });
+  ['pause', 'seeked', 'timeupdate', 'ended'].forEach(ev => film.addEventListener(ev, sync));
+  btn.addEventListener('click', () => {
+    on = !on;
+    btn.setAttribute('aria-pressed', String(on));
+    btn.textContent = on ? 'Captions on' : 'Captions off';
+    sync();
+  });
+})();
+</script>
+
+<footer class="col">
+  <p>Fonts in the video: Fraunces, Inter, JetBrains Mono and Caveat (SIL OFL). Quotations are from Naur's 1985 journal text.</p>
+</footer>

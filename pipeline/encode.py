@@ -11,13 +11,13 @@ import subprocess
 import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
-from common import BUILD, ROOT  # noqa: E402
-
-SLUG = "specs-as-theory-building"
+from common import BUILD, ROOT, load_narration, slug  # noqa: E402
 
 
 def main():
     tl = json.loads((BUILD / "timeline.json").read_text())
+    narr = load_narration()
+    SLUG = slug(narr)
     out = ROOT / "out" / f"{SLUG}.mp4"
     srt = ROOT / "out" / f"{SLUG}.srt"
     ln = "loudnorm=I=-16:TP=-1.5:LRA=11"
@@ -33,7 +33,7 @@ def main():
            "-c:v", "libx264", "-preset", "slow", "-crf", "18", "-tune", "animation", "-pix_fmt", "yuv420p",
            "-af", af, "-c:a", "aac", "-b:a", "192k",
            "-c:s", "mov_text", "-metadata:s:s:0", "language=eng",
-           "-metadata", "title=Specs as Theory Building",
+           "-metadata", f"title={narr['title']}",
            "-movflags", "+faststart", "-t", f"{tl['duration']:.3f}", str(out)]
     subprocess.run(cmd, check=True)
     size = out.stat().st_size / 1e6

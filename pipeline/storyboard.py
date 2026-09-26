@@ -11,7 +11,7 @@ import subprocess
 import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
-from common import BUILD, ROOT  # noqa: E402
+from common import BUILD, ROOT, load_narration  # noqa: E402
 
 # (scene, anchor, offset seconds, caption)
 BEATS = [
@@ -37,20 +37,28 @@ BEATS = [
 ]
 
 
+def beats(tl):
+    """Resolve BEATS against the timeline: [(n, t, scene, caption, image name)]."""
+    scenes = {s["id"]: s for s in tl["scenes"]}
+    out = []
+    for n, (scene, anchor, off, caption) in enumerate(BEATS, 1):
+        t0 = scenes[scene]["start"] if anchor == "start" else tl["cues"][f"{scene}.{anchor}"]
+        t = min(t0 + off, scenes[scene]["end"] - 0.4, tl["duration"] - 0.1)  # stay clear of the exit fade
+        out.append((n, t, scene, caption, f"{n:02d}_{scene}.jpg"))
+    return out
+
+
 def main():
     tl = json.loads((BUILD / "timeline.json").read_text())
-    scenes = {s["id"]: s for s in tl["scenes"]}
     fps = tl["fps"]
     outdir = ROOT / "storyboard" / "frames"
     outdir.mkdir(parents=True, exist_ok=True)
     for f in outdir.glob("*.jpg"):
         f.unlink()
     rows, shots = [], []
-    for n, (scene, anchor, off, caption) in enumerate(BEATS, 1):
-        t0 = scenes[scene]["start"] if anchor == "start" else tl["cues"][f"{scene}.{anchor}"]
-        t = min(t0 + off, scenes[scene]["end"] - 0.4, tl["duration"] - 0.1)  # stay clear of the exit fade
+    for n, t, scene, caption, img in beats(tl):
         src = BUILD / "frames" / f"f_{int(round(t * fps)):05d}.jpg"
-        dst = outdir / f"{n:02d}_{scene}.jpg"
+        dst = outdir / img
         subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", str(src), "-vf", "scale=960:540", "-q:v", "4", str(dst)], check=True)
         shots.append(dst)
         said = [l["text"] for l in tl["lines"] if l["scene"] == scene and l["start"] <= t + 0.6 and l["end"] >= t - 2.5]
@@ -66,7 +74,7 @@ def main():
     subprocess.run(["ffmpeg", "-v", "error", "-y", *args, "-filter_complex", fc, "-map", "[out]", "-q:v", "4",
                     str(ROOT / "storyboard" / "contact-sheet.jpg")], check=True)
 
-    md = ["# Storyboard: *Specs as Theory Building*", "",
+    md = [f"# Storyboard: *{load_narration()['title']}*", "",
           f"{len(rows)} beats across {tl['duration']:.0f} seconds. Keyframes are exported from the rendered video "
           "(`python pipeline/storyboard.py`), so they always match the current cut.", "",
           "![Contact sheet](contact-sheet.jpg)", ""]

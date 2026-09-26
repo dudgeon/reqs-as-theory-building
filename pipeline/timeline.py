@@ -11,9 +11,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
-from common import BUILD, ROOT, load_narration  # noqa: E402
-
-SLUG = "specs-as-theory-building"
+from common import BUILD, ROOT, load_narration, slug  # noqa: E402
 
 
 def srt_time(t):
@@ -43,6 +41,7 @@ def caption_chunks(words, max_chars=60):
 
 def main():
     narr = load_narration()
+    SLUG = slug(narr)
     vo = json.loads((BUILD / "vo.json").read_text())
     align = json.loads((BUILD / "alignment.json").read_text())
     durs = {(l["scene"], l["index"]): l for l in vo["lines"]}
