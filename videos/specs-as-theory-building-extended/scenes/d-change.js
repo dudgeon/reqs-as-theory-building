@@ -222,8 +222,9 @@ const KNOBS = [
   ['slider', -122, 22], ['button', -16, 22], ['button', 26, 22], ['knob', 98, 22], ['switch', 168, 22],
   ['slider', -122, 94], ['knob', -16, 94], ['knob', 54, 94], ['button', 116, 94], ['switch', 170, 94],
   ['ant', -126, -130], ['ant', 20, -130], ['ant', 148, -130], ['lever', 220, -40], ['lever', 220, 58], ['crank', -220, 20],
+  ['antd', -150, 130], ['antd', 60, 130], ['lever', -220, -70],
 ];
-function knobControl(t, type, ph, grey) {
+function knobControl(t, type, ph, grey, side = 1) {
   const col = cc => (grey > 0 ? mixColor(cc, GREY, grey) : cc);
   switch (type) {
     case 'knob': {
@@ -250,7 +251,8 @@ function knobControl(t, type, ph, grey) {
       return [circle(0, 2, 14, { fill: 'rgba(30,42,58,0.16)' }), circle(0, 0, 14, { fill: col(lit ? C.tealLight : C.coralLight) }), circle(-4, -4, 4, { fill: C.card, o: 0.7 })].join('');
     }
     case 'ant': return [line(0, 0, 0, -34, { stroke: col(C.ink2), sw: 5 }), circle(0, -40, 10, { fill: col(C.plum) })].join('');
-    case 'lever': { const a = 6 * Math.sin(t * 1.1 + ph * 4); return G({ r: a }, line(0, 0, 40, -26, { stroke: col(C.ink2), sw: 6 }), circle(42, -28, 11, { fill: col(C.coral) })); }
+    case 'antd': return [line(0, 0, 0, 30, { stroke: col(C.ink2), sw: 5 }), rect(-14, 28, 28, 14, { rx: 5, fill: col(C.teal) })].join('');
+    case 'lever': { const a = 6 * Math.sin(t * 1.1 + ph * 4); return G({ sx: side, sy: 1 }, G({ r: a }, line(0, 0, 40, -26, { stroke: col(C.ink2), sw: 6 }), circle(42, -28, 11, { fill: col(C.coral) }))); }
     case 'crank': { const a = t * 90 + ph * 50; return G({ x: -34, y: 0 }, line(34, 0, 0, 0, { stroke: col(C.ink2), sw: 6 }), G({ r: a }, line(0, 0, 0, 26, { stroke: col(C.ink2), sw: 5 }), circle(0, 30, 8, { fill: col(C.plum) }))); }
   }
   return '';
@@ -258,15 +260,15 @@ function knobControl(t, type, ph, grey) {
 function knobBox(t, t0, greys) {
   const out = [];
   KNOBS.forEach(([type, x, y], i) => {
-    if (type !== 'ant' && type !== 'lever' && type !== 'crank') return;
+    if (!['ant', 'antd', 'lever', 'crank'].includes(type)) return;
     const p = P(t, t0 + i * 0.035, 0.4, 'outBack');
-    if (p > 0) out.push(G({ x, y, s: p }, knobControl(t, type, i * 0.37, greys[i] || 0)));
+    if (p > 0) out.push(G({ x, y, s: p }, knobControl(t, type, i * 0.37, greys[i] || 0, x < 0 ? -1 : 1)));
   });
   out.push(rect(-84, -146, 64, 24, { rx: 8, fill: C.ink2 }), rect(-72, -140, 40, 6, { rx: 3, fill: C.night }));
   out.push(shadowCard(-220, -130, 440, 260, { rx: 22 }));
   out.push(T('program', -196, -96, { font: 'mono', size: 22, weight: 600, fill: C.ink2 }));
   KNOBS.forEach(([type, x, y], i) => {
-    if (type === 'ant' || type === 'lever' || type === 'crank') return;
+    if (['ant', 'antd', 'lever', 'crank'].includes(type)) return;
     const p = P(t, t0 + i * 0.035, 0.4, 'outBack');
     if (p > 0) out.push(G({ x, y, s: p }, knobControl(t, type, i * 0.37, greys[i] || 0)));
   });
@@ -300,7 +302,7 @@ function costFlex(t, S, c) {
   const eB = enter(t, c.flex - 0.3, { d: 0.5, dy: 30 });
   out.push(G({ x: bx, y: by + eB.y, s: bs * eB.s, o: eB.o }, knobBox(t, c.flex - 0.2, greys)));
   // coins leave a stack and pour into the box: paid now
-  const sx = 270, sy = 890, N = 13, fly = 10, dz = 17, gap = 0.15;
+  const sx = 320, sy = 880, N = 16, fly = 12, dz = 17, gap = 0.12;
   const eS = enter(t, c.flex - 0.1, { d: 0.5 });
   const st = [];
   for (let k = 0; k < N; k++) {
@@ -311,11 +313,11 @@ function costFlex(t, S, c) {
   }
   if (eS.o > 0) out.push(G({ o: eS.o, y: eS.y }, st));
   for (let j = 0; j < fly; j++) {
-    const dep = c.futures - 0.3 + j * gap, f = P(t, dep, 0.7, 'inOut');
+    const dep = c.futures - 0.3 + j * gap, f = P(t, dep, 0.75, 'inOut');
     if (f <= 0 || f >= 1) continue;
     const k = N - 1 - j;
     const [x, y] = quadPoint(sx, sy - k * dz, bx - 52 * bs, by - 140 * bs, -0.45, f);
-    out.push(G({ x, y, s: 1.3, o: clamp((1 - f) * 6) }, coinFace(Math.cos((t - dep) * 11))));
+    out.push(G({ x, y, s: 1.3, o: clamp((1 - f) * 6) }, coinFace(0.3 + 0.7 * Math.abs(Math.cos((t - dep) * 6)))));
   }
   // possible futures float up from the knobs, and fade unused
   FUTS.forEach((fu, i) => {
@@ -634,7 +636,7 @@ SCENES.life = {
       flash = Math.max(flash, P(t, t0 + 1.6, 0.15) * (1 - P(t, t0 + 1.85, 0.5)));
       out.push(drawPath(arcPath(lx, ly, win0[0], win0[1], -0.18), P(t, t0 + 0.95, 0.5, 'inOut'), { stroke: C.goldDeep, sw: 3, o: 0.7 * (1 - P(t, c.dies, 0.6)) }));
       if (u >= 1) return;
-      const [x, y] = u > 0 ? quadPoint(lx, ly, win0[0], win0[1], -0.18, u) : quadPoint(2010, 250, lx, ly, 0.25, f);
+      const [x, y] = u > 0 ? quadPoint(lx, ly, win0[0], win0[1], -0.18, u) : quadPoint(2020, 130, lx, ly, 0.22, f);
       const tk = P(t, t0 + 0.82, 0.35);
       out.push(G({ x, y, s: lerp(0.9, 0.4, u), r: lerp(lerp(-14, 4, f), 0, u), o: 1 - P(t, t0 + 1.45, 0.2) },
         reqCard({ stroke: mixColor(C.coral, C.goldDeep, tk) }), G({ x: 64, y: -46 }, tickBadge(tk * (1 - u), 20))));
@@ -662,14 +664,16 @@ SCENES.life = {
     const wk = clamp((t - c.dissolves + 0.05) / 1.6), walk = 0.45 * wk + 0.55 * wk * wk;
     const dim = P(t, c.dies - 0.25, 0.7);
     const ghost = t > c.dissolves + 0.1;
-    const bFade = 1 - P(t, c.dissolves + 0.2, 1.0);
+    const bFade = 1 - P(t, c.dissolves + 0.35, 1.6, 'inOut'), bRise = -26 * P(t, c.dissolves + 0.2, 2.0, 'inOut');
     team.forEach((pp, i) => {
       const e = enter(t, c.alive - 0.35 + i * 0.12, { d: 0.6, dy: 40 });
       if (e.o <= 0) return;
       const dx = -760 * walk, bob = walk > 0 ? -Math.abs(Math.sin((t - c.dissolves) * 9 + i)) * 8 : 0;
       const bp = P(t, c.alive - 0.2 + i * 0.12, 0.6);
-      const bub = bp > 0 && bFade > 0 ? G({ x: 96, y: -420, s: 0.35 + 0.65 * Ease.outBack(bp), o: clamp(bp * 2) * bFade },
-        theoryBubble(t, { w: 200, h: 140, seed: 31 + i, n: 8, t0: c.alive - 0.1 + i * 0.15, dur: 0.8, dim: dim * 0.75, ghost, glow: 1 - dim * 0.6, tailX: -56 })) : '';
+      // the bubbles stay behind when the team leaves: the theory goes ghostly and fades where it was
+      if (bp > 0 && bFade > 0) out.push(G({ x: pp.x, y: 950 + e.y + bRise, s: 0.82, o: e.o }, G({ x: 96, y: -420, s: 0.35 + 0.65 * Ease.outBack(bp), o: clamp(bp * 2) * bFade },
+        theoryBubble(t, { w: 200, h: 140, seed: 31 + i, n: 8, t0: c.alive - 0.1 + i * 0.15, dur: 0.8, dim: dim * 0.75, ghost, glow: 1 - dim * 0.6, tailX: -56 }))));
+      const bub = '';
       out.push(G({ x: pp.x + dx, y: 950 + bob + e.y, s: 0.82, o: e.o },
         person(t, { shirt: pp.shirt, skin: pp.skin, hair: pp.hair, hairStyle: pp.hs, seed: 4 + i, mood: walk > 0 ? 'neutral' : 'happy', flip: walk > 0, look: walk > 0 ? -0.5 : 0.5,
           arms: walk > 0 ? 'down' : i === 1 && t > c.control ? 'point' : 'down', glowHead: (1 - dim) * 0.5 * P(t, c.alive, 0.5) }), bub));
@@ -679,12 +683,12 @@ SCENES.life = {
       const t0 = c.visibledeath - 0.4 + k * 0.4;
       const f = P(t, t0, 0.85, 'inOut');
       if (f <= 0) return;
-      const tx = 430 + [0, 40, -34, 14][k], ty = 840 - k * 34;
-      const [x, y] = quadPoint(2010, 250, tx, ty, 0.22, f);
-      out.push(G({ x, y, r: lerp(-16, [-8, 6, -4, 9][k], f) }, reqCard(), G({ x: 66, y: -44 }, qMark(P(t, t0 + 0.9, 0.35), { r: 20, stroke: C.coral, color: C.coral }))));
+      const tx = 470 + [0, 46, -40, 16][k], ty = 800 - k * 40;
+      const [x, y] = quadPoint(2020, 130, tx, ty, 0.2, f);
+      out.push(G({ x, y, s: 1.15, r: lerp(-16, [-8, 6, -4, 9][k], f) }, reqCard(), G({ x: 66, y: -44 }, qMark(P(t, t0 + 0.9, 0.35), { r: 22, stroke: C.coral, color: C.coral }))));
     });
     const vL = P(t, c.visibledeath + 0.45, 0.45);
-    if (vL > 0) out.push(G({ o: vL, y: (1 - vL) * 10 }, hand('requests can’t be answered intelligently', 520, 1000, { size: 44, fill: C.coral })));
+    if (vL > 0) out.push(G({ o: vL, y: (1 - vL) * 10 }, hand('requests can’t be answered intelligently', 540, 960, { size: 46, fill: C.coral })));
     return G({ o: X.o, y: X.y }, out);
   },
   sfx(S) {

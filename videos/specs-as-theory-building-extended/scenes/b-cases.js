@@ -137,7 +137,7 @@ const CMP_B = [
   { x: 1680, shirt: C.olive, skin: C.skin[4], hair: C.hair[1], hs: 2, seed: 24 },
 ];
 const cmpKA = () => once('compiler_KA', () => makeConstellation(31, 9, { rx: 68, ry: 38, minD: 22, extra: 0.4 }));
-const cmpKB = () => once('compiler_KB', () => makeConstellation(37, 5, { rx: 60, ry: 32, minD: 28, extra: 0 }));
+const cmpKB = i => once('compiler_KB' + i, () => makeConstellation([37, 44][i], 5, { rx: 60, ry: 32, minD: 28, extra: 0 }));
 const cmpKAdv = () => once('compiler_Kadv', () => makeConstellation(43, 6, { rx: 64, ry: 22, minD: 20, extra: 0.3 }));
 // group B's proposals, in machine coordinates
 const CMP_PROPS = [
@@ -147,7 +147,7 @@ const CMP_PROPS = [
   { x: 96, y: 92, w: 124, h: 54, r: 9, c: C.mustard },
   { x: -176, y: 140, w: 150, h: 58, r: -6, c: '#E4B955' },
 ];
-// the amorphous additions, in machine coordinates: x, y, radius, colour, early (arrives during "ten years on")
+// the amorphous additions, in machine coordinates: x, y, radius, colour, early (arrives as the authors walk off)
 const CMP_BLOBS = [
   [-205, -166, 46, C.mustard, 1], [250, -128, 40, GREY, 1], [-120, 160, 44, C.olive, 1],
   [-40, -180, 52, C.coralLight, 0], [120, -176, 44, C.blueLight, 0], [284, -22, 46, C.plumLight, 0],
@@ -335,7 +335,7 @@ SCENES.compiler = {
       const keen = t > c.prop - 0.3 && t < c.spot - 0.3;
       const arms = keen ? (i === 0 ? 'point' : [[-52, -108], [66, -196 + wobble(t, 1.1, 8)]]) : i === 1 ? 'hips' : 'down';
       const mood = t > c.spot - 0.2 && t < c.L2 ? 'o' : t > c.amo + 0.8 ? 'worried' : 'happy';
-      const K = cmpKB();
+      const K = cmpKB(i);
       const lit = gotIt > 0 ? (i === 0 ? [0, 2] : [1]).map(k => {
         const [nx, ny, sz, ph] = K.pts[k];
         const r = 4.6 * sz * gotIt * (1 + 0.15 * Math.sin(t * 2.6 + ph));
@@ -435,7 +435,7 @@ const MON_M = [
   { x: 1688, shirt: C.mustard, skin: C.skin[3], hair: C.hair[0], hs: 0, seed: 35, book: C.tealDark, r: -2 },
 ];
 const monKV = () => once('monitor_KV', () => makeConstellation(53, 10, { rx: 68, ry: 38, minD: 21, extra: 0.45 }));
-const monKM = () => once('monitor_KM', () => makeConstellation(59, 4, { rx: 54, ry: 28, minD: 30, extra: 0 }));
+const monKM = i => once('monitor_KM' + i, () => makeConstellation([59, 71, 83][i], 4, { rx: 54, ry: 28, minD: 30, extra: 0 }));
 // a live sensor graph across a w×h box centred on the origin; fault 0…1 turns it coral with a spike
 function sensorLine(t, w, h, seed, col, fault) {
   const n = 36, pts = [];
@@ -631,7 +631,7 @@ SCENES.monitor = {
         shirt: pp.shirt, skin: pp.skin, hair: pp.hair, hairStyle: pp.hs, seed: pp.seed, flip: true, look: 0.4 - 0.9 * stuckP,
         mood: happy ? 'happy' : stuckP > 0.3 ? 'worried' : 'neutral', bookCol: pp.book, bookR: pp.r, qp,
         bubble: P(t, t0 + 0.6, 0.6),
-        theory: { K: monKM(), w: 170, h: 116, ghost: true, color: C.ink3, lineColor: C.ink3, glow: 0, t0: t0 + 0.8, dur: 0.5, dim: qp },
+        theory: { K: monKM(i), w: 170, h: 116, ghost: true, color: C.ink3, lineColor: C.ink3, glow: 0, t0: t0 + 0.8, dur: 0.5, dim: qp },
       })));
     });
     // the clock spins while they are stuck, and stops when the veteran clears it
