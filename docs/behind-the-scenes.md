@@ -1,6 +1,6 @@
 # Behind the scenes: making *Specs as Theory Building*
 
-This is the retrospective for how the video in this repo was made. It covers the approach, the order things happened in, what worked, what broke and how it was fixed, and the numbers. If you want to **make another video**, read [`playbook.md`](playbook.md). It turns everything below into a step-by-step recipe. The animation API is in [`engine.md`](engine.md).
+This is the retrospective for how the videos in this repo were made. The first part covers the 90-second cut: the approach, the order things happened in, what worked, what broke and how it was fixed, and the numbers. [The extended cut](#the-extended-cut-about-six-minutes) at the end covers the second, six-minute video and what long-form changed. If you want to **make another video**, read [`playbook.md`](playbook.md). It turns everything below into a step-by-step recipe. The animation API is in [`engine.md`](engine.md).
 
 ---
 

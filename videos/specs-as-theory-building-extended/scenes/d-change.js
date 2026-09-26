@@ -429,7 +429,7 @@ function changeCard(o = {}) {
   ].join('');
 }
 const VAR_X = [370, 665, 960, 1255, 1550], VAR_Y = 455, NAT = 1;
-const VAR_EXT = [{ x: 124, y: -22, w: 54, h: 42, r: 14 }, null, { x: -6, y: -98, w: 76, h: 34, r: -8 }, { x: -118, y: 68, w: 56, h: 40, r: -18 }, { x: 34, y: 4, w: 64, h: 38, r: 22 }];
+const VAR_EXT = [{ x: -122, y: -24, w: 54, h: 42, r: -14 }, null, { x: -6, y: -98, w: 76, h: 34, r: -8 }, { x: -30, y: 90, w: 70, h: 36, r: -10 }, { x: 34, y: 4, w: 64, h: 38, r: 22 }];
 const DECAY_PATCHES = [{ x: 118, y: -40, w: 54, h: 42, r: 14 }, { x: -10, y: -98, w: 76, h: 34, r: -8 }, { x: -120, y: 66, w: 56, h: 40, r: -18 },
   { x: 40, y: 6, w: 62, h: 38, r: 22 }, { x: 104, y: 80, w: 62, h: 34, r: -12 }, { x: -118, y: -52, w: 46, h: 40, r: 10 }];
 
@@ -579,6 +579,17 @@ SCENES.decay = {
 };
 
 // ================================================================== LIFE (chapter: Life, death and revival)
+// A team member's theory bubble that turns into a ghost: g 0 (alive) … 1 (a dashed, hollow outline). Centred.
+function fadingBubble(t, K, o = {}) {
+  const { w = 200, h = 140, g = 0, t0 = -99, dur = 0.8, dim = 0, tailX = -56 } = o;
+  const gh = g > 0.35;
+  return [
+    g < 1 ? G({ o: 1 - g }, thoughtBubble(w, h, { fill: C.night, stroke: 'rgba(30,42,58,0.35)', tailX })) : '',
+    g > 0 ? G({ o: g }, thoughtBubble(w, h, { fill: 'none', stroke: C.ink3, dash: '7 7', tailX })) : '',
+    constellation(t, K, { t0, dur, size: 4.2, lineW: 1.8, glow: 0.8 * (1 - g) * (1 - dim * 0.6), ghost: gh, dim, color: gh ? C.ink3 : C.gold, lineColor: gh ? C.ink3 : C.goldLight }),
+  ].join('');
+}
+
 // The program: an app window over a server. Centred on the window/server pair (about 380×400).
 function appMachine(t, o = {}) {
   const { upd = 0, flash = 0 } = o;
@@ -663,8 +674,7 @@ SCENES.life = {
     ];
     const wk = clamp((t - c.dissolves + 0.05) / 1.6), walk = 0.45 * wk + 0.55 * wk * wk;
     const dim = P(t, c.dies - 0.25, 0.7);
-    const ghost = t > c.dissolves + 0.1;
-    const bFade = 1 - P(t, c.dissolves + 0.35, 1.6, 'inOut'), bRise = -26 * P(t, c.dissolves + 0.2, 2.0, 'inOut');
+    const gK = P(t, c.dissolves + 0.05, 0.7), bFade = 1 - P(t, c.dissolves + 1.1, 1.7, 'inOut'), bRise = -30 * P(t, c.dissolves + 0.2, 2.6, 'inOut');
     team.forEach((pp, i) => {
       const e = enter(t, c.alive - 0.35 + i * 0.12, { d: 0.6, dy: 40 });
       if (e.o <= 0) return;
@@ -672,7 +682,7 @@ SCENES.life = {
       const bp = P(t, c.alive - 0.2 + i * 0.12, 0.6);
       // the bubbles stay behind when the team leaves: the theory goes ghostly and fades where it was
       if (bp > 0 && bFade > 0) out.push(G({ x: pp.x, y: 950 + e.y + bRise, s: 0.82, o: e.o }, G({ x: 96, y: -420, s: 0.35 + 0.65 * Ease.outBack(bp), o: clamp(bp * 2) * bFade },
-        theoryBubble(t, { w: 200, h: 140, seed: 31 + i, n: 8, t0: c.alive - 0.1 + i * 0.15, dur: 0.8, dim: dim * 0.75, ghost, glow: 1 - dim * 0.6, tailX: -56 }))));
+        fadingBubble(t, once('life_K' + i, () => makeConstellation(31 + i, 8, { rx: 72, ry: 42, minD: 24, extra: 0.3 })), { g: gK, t0: c.alive - 0.1 + i * 0.15, dim: dim * 0.75 }))));
       const bub = '';
       out.push(G({ x: pp.x + dx, y: 950 + bob + e.y, s: 0.82, o: e.o },
         person(t, { shirt: pp.shirt, skin: pp.skin, hair: pp.hair, hairStyle: pp.hs, seed: 4 + i, mood: walk > 0 ? 'neutral' : 'happy', flip: walk > 0, look: walk > 0 ? -0.5 : 0.5,
@@ -684,7 +694,7 @@ SCENES.life = {
       const f = P(t, t0, 0.85, 'inOut');
       if (f <= 0) return;
       const tx = 470 + [0, 46, -40, 16][k], ty = 800 - k * 40;
-      const [x, y] = quadPoint(2020, 130, tx, ty, 0.2, f);
+      const [x, y] = quadPoint(2020, 90, tx, ty, 0.3, f);
       out.push(G({ x, y, s: 1.15, r: lerp(-16, [-8, 6, -4, 9][k], f) }, reqCard(), G({ x: 66, y: -44 }, qMark(P(t, t0 + 0.9, 0.35), { r: 22, stroke: C.coral, color: C.coral }))));
     });
     const vL = P(t, c.visibledeath + 0.45, 0.45);
@@ -715,7 +725,7 @@ SCENES.life = {
 // piano, seen from the players' side: origin at the centre of the keyboard's front edge
 function piano(t, o = {}) {
   const w = o.w ?? 660, out = [];
-  out.push(rect(-w / 2 + 34, 100, 24, 78, { rx: 6, fill: '#3B2A20' }), rect(w / 2 - 58, 100, 24, 78, { rx: 6, fill: '#3B2A20' }));
+  out.push(rect(-w / 2 + 34, 100, 24, 58, { rx: 6, fill: '#3B2A20' }), rect(w / 2 - 58, 100, 24, 58, { rx: 6, fill: '#3B2A20' }));
   out.push(rect(-w / 2 + 4, 12, w, 104, { rx: 12, fill: 'rgba(30,42,58,0.14)' }));
   out.push(rect(-w / 2, 4, w, 104, { rx: 12, fill: '#4A3426' }), rect(-w / 2 + 20, 22, w - 40, 68, { rx: 8, stroke: '#6B4E36', sw: 3 }));
   out.push(path(`M${-w / 2 - 6} 6 L${w / 2 + 6} 6 L${w / 2 - 6} -22 L${-w / 2 + 6} -22 Z`, { fill: C.card, stroke: '#CFC6B4', sw: 2 }));
@@ -823,7 +833,7 @@ function revivalMusic(t, S, c) {
   const eH = enter(t, c.instrument - 0.4, { dy: 14 });
   out.push(G({ o: eH.o, y: eH.y }, headline([{ t: 'Passed on the way ' }, { t: 'music', fill: C.goldDeep }, { t: ' is taught' }], { size: 56 })));
   const e = enter(t, c.instrument - 0.35, { d: 0.6, dy: 30 });
-  const fy = 900, sx = 850, tx = 1010, kx = 945, ky = 776;
+  const fy = 900, sx = 850, tx = 1010, kx = 945, ky = 798;
   // warm light
   out.push(circle(930, 650, 520, { fill: 'url(#gGlow)', o: e.o * (0.3 + 0.04 * Math.sin(t * 2)) }));
   // shared theory: the teacher's constellation copies across, node by node
@@ -833,9 +843,9 @@ function revivalMusic(t, S, c) {
   const play = Math.sin(t * 9) * 3;
   const Z = [];
   Z.push(G({ o: e.o, y: e.y }, [
-    G({ x: sx, y: fy }, holder(t, { shirt: C.teal, skin: C.skin[0], hair: C.hair[2], hairStyle: 1, seed: 31, mood: 'happy', look: 0.5,
+    G({ x: sx, y: fy }, holder(t, { shirt: C.teal, skin: C.skin[0], hair: C.hair[2], hairStyle: 1, seed: 31, mood: 'happy', look: 0.5, noLegs: true,
       arms: [[-30 + play, -128], [30 - play, -128]], bubble: P(t, c.instrument + 0.15, 0.6), bubbleSide: -1, theory: { K, t0: t0s, dur: durS, glow: 1 } })),
-    G({ x: tx, y: fy }, holder(t, { shirt: C.plum, skin: C.skin[3], hair: C.hair[4], hairStyle: 4, seed: 33, mood: 'happy', look: -0.6,
+    G({ x: tx, y: fy }, holder(t, { shirt: C.plum, skin: C.skin[3], hair: C.hair[4], hairStyle: 4, seed: 33, mood: 'happy', look: -0.6, noLegs: true,
       arms: [[-112, -184], [52, -126 + Math.sin(t * 7) * 3]], bubble: P(t, c.instrument - 0.2, 0.6), bubbleSide: 1,
       theory: { K, t0: c.instrument - 0.1, dur: 0.8, glow: 1 + 0.4 * P(t, t0s - 0.3, 0.4) } })),
     G({ x: kx, y: ky }, piano(t, { pressed: [[9 + (Math.floor(t * 4) % 3), 1], [19 + (Math.floor(t * 3 + 1) % 4), 1]] })),
