@@ -581,7 +581,7 @@ function factCard(o = {}) {
     rect(x + 3, y + 9, w, h, { rx: 18, fill: 'rgba(30,42,58,0.10)' }),
     rect(x, y, w, h, { rx: 18, fill: assumed ? C.paper : C.card, stroke: assumed ? C.mustard : 'rgba(30,42,58,0.12)', sw: assumed ? 3.5 : 2, dash: assumed ? '14 10' : undefined }),
     rect(x + 16, y + 20, 8, h - 40, { rx: 4, fill: accent }),
-    T(kind, x + 44, y + 46, { size: 16, weight: 800, fill: C.ink3, ls: 3 }),
+    T(kind, x + 44, y + 46, { size: 18, weight: 800, fill: C.ink3, ls: 3 }),
   ];
   if (status) {
     const lab = assumed ? 'ASSUMED' : 'VERIFIED', pw = measure(lab, 16, 'sans', 800) + 16 * 2 + 30;
@@ -595,7 +595,7 @@ function factCard(o = {}) {
     const rp = clamp(k - 1 - i);
     if (rp <= 0) return;
     const ry = dy + 36 + i * rowH;
-    out.push(T(lab, x + 44, ry, { size: 15, weight: 800, fill: C.ink3, ls: 2, o: rp }),
+    out.push(T(lab, x + 44, ry, { size: 17, weight: 800, fill: C.ink3, ls: 1.5, o: rp }),
       T(val, x + 168 + (1 - rp) * 14, ry + 1, { size: 23, weight: 500, fill: C.ink, o: rp }));
   });
   if (status === 'verified' && sealP > 0) out.push(G({ x: x + w - 66, y: y + h - 58 }, seal(sealP, { r: 38 })));

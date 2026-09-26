@@ -21,6 +21,10 @@ SCENES.takeaways = {
     const active = rows.reduce((k, r, i) => (t >= S.cue(r.cue) - 0.3 ? i : k), -1);
     rows.forEach((r, i) => {
       const c = S.cue(r.cue), e = enter(t, c - 0.3, { d: 0.55, dy: 22 });
+      // five numbered empty slots wait from the start, and each fills in on its cue
+      const slot = P(t, S.start + 0.12 + i * 0.07, 0.4) * (1 - e.o);
+      if (slot > 0.01) out.push(G({ x: 960, y: ys[i], o: slot }, rect(-800, -60, 1600, 120, { rx: 22, stroke: C.faint, sw: 2.5, dash: '10 9' }),
+        G({ x: -730, y: 0 }, circle(0, 0, 25, { stroke: C.faint, sw: 2.5 }), T(String(i + 1), 0, 9, { size: 26, weight: 800, fill: C.faint, anchor: 'middle' }))));
       if (e.o <= 0) return;
       const lt = t - c, y = ys[i];
       const now = i === active ? P(t, c - 0.3, 0.4) : 0;

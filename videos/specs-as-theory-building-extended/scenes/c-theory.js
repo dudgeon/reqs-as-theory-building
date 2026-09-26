@@ -13,8 +13,10 @@ const headline = (segs, o = {}) => richText(segs, 960, o.y ?? 150, { font: 'seri
 const hand = (s, x, y, o = {}) => T(s, x, y, { font: 'hand', size: 46, weight: 700, anchor: 'middle', fill: C.ink2, ...o });
 // fractional part
 const frac = v => v - Math.floor(v);
-// visible from a (fade in di) until b (fade out do_ starting at b)
-const win = (t, a, b, di = 0.45, do_ = 0.4) => Math.min(P(t, a, di, 'out'), 1 - P(t, b, do_, 'inOut'));
+// phase swaps inside a scene: the old phase fades over SWAP_FD, ending at the swap time sw; the next phase starts at
+// sw - 0.1. The old headline alone fades a little faster (hdOut), so two headlines are never on screen together.
+const SWAP_FD = 0.34;
+const hdOut = (t, sw) => 1 - P(t, sw - SWAP_FD, SWAP_FD - 0.1, 'inOut');
 
 // teal success badge with a tick, centred (p 0…1)
 function tickBadge(p, r = 28) {
@@ -158,12 +160,12 @@ function farBook(col) {
 }
 function rulesPhase(t, c) {
   const out = [];
-  // the headline and the RULES book arrive together, right after the panels have cleared
-  const tIn = c.sw2;
+  // the headline and the RULES book arrive together, as the panels finish clearing
+  const tIn = c.sw2 - 0.1;
   const eH = enter(t, tIn, { dy: 14 });
   const hw = measure('Rule-following?', 60, 'serif', 600);
   const strike = P(t, c.regress + 0.4, 0.4, 'inOut');
-  out.push(G({ o: eH.o, y: eH.y }, headline([{ t: 'Rule-following?' }]),
+  out.push(G({ o: eH.o * hdOut(t, c.sw3), y: eH.y }, headline([{ t: 'Rule-following?' }]),
     drawPath(`M${r2(960 - hw / 2 - 12)} 134 C${r2(960 - hw / 6)} 126 ${r2(960 + hw / 6)} 140 ${r2(960 + hw / 2 + 12)} 128`, strike, { stroke: C.coral, sw: 8 })));
   // book 0: RULES (centre first, then it takes its place at the head of the row)
   const slide = P(t, c.rules2 - 0.55, 0.6, 'inOut');
@@ -212,20 +214,20 @@ function rulesPhase(t, c) {
 // Phase 4: explain, answer, argue.
 function theoryTalk(t, c) {
   const out = [];
-  const eH = enter(t, c.sw3, { dy: 14 });
+  const eH = enter(t, c.sw3 - 0.1, { dy: 14 });
   out.push(G({ o: eH.o, y: eH.y }, headline([{ t: 'Having a ' }, { t: 'theory', fill: C.goldDeep }, { t: ' goes further' }])));
-  const eP = enter(t, c.sw3 + 0.12, { dy: 30, d: 0.6 });
+  const eP = enter(t, c.sw3 + 0.02, { dy: 30, d: 0.6 });
   const asking = t > c.answer - 0.35, arguing = t > c.argue - 0.3;
   const askArms = arguing ? 'hips' : asking ? [[-52, -108], [56, -238]] : 'down';
   const OX = 600, HX = 1320, PY = 955, PS = 1.2;
   out.push(G({ x: OX, y: PY + eP.y, s: PS, o: eP.o }, person(t, { shirt: C.blue, skin: C.skin[3], hair: C.hair[3], hairStyle: 3, seed: 41, look: 0.7, arms: askArms, mood: arguing ? 'closed' : asking ? 'o' : 'neutral' })));
-  const bubble = P(t, c.sw3 + 0.35, 0.7);
+  const bubble = P(t, c.sw3 + 0.25, 0.7);
   const beats = [c.explain - 0.3, c.answer + 0.15, c.argue + 0.1];
   const talkPulse = beats.reduce((m, tp) => Math.max(m, t > tp ? Math.exp(-(t - tp) * 2.2) : 0), 0);
   const holdArms = t > c.argue + 0.1 ? 'point' : t > c.explain - 0.3 ? [[-52, -108], [84, -180 + wobble(t, 1.4, 8)]] : 'down';
   out.push(G({ x: HX, y: PY + eP.y, s: PS, o: eP.o }, holder(t, {
     flip: true, bubble, shirt: C.olive, skin: C.skin[0], hair: C.hair[1], hairStyle: 0, seed: 42, look: 0.7, mood: 'happy', arms: holdArms, glowHead: 0.6 * talkPulse,
-    theory: { seed: 12, n: 10, t0: c.sw3 + 0.5, dur: 1.0, glow: 1 + 0.8 * talkPulse },
+    theory: { seed: 12, n: 10, t0: c.sw3 + 0.4, dur: 1.0, glow: 1 + 0.8 * talkPulse },
   })));
   // holder's lines (right slot) and the other person's (left slot)
   const hs = (a, b) => [P(t, a, 0.4), b == null ? 0 : P(t, b, 0.22)];
@@ -235,7 +237,7 @@ function theoryTalk(t, c) {
   // each reply draws on the theory: a few gold sparkles pop around the holder's bubble
   beats.forEach((tp, i) => {
     const sp = P(t, tp + 0.1, 0.5, 'outBack') * (1 - P(t, tp + 0.9, 0.4));
-    if (sp > 0) [[-150, -52, 15], [168, -40, 11], [-128, 58, 10]].forEach(([dx, dy, r], k) =>
+    if (sp > 0) [[-176, -40, 15], [170, -46, 11], [-164, 50, 10]].forEach(([dx, dy, r], k) =>
       out.push(sparkle(R[0] + dx + (i - 1) * 12, R[1] + dy - 14 * sp, r * sp * (1 + 0.12 * Math.sin(t * 6 + k)), { fill: C.gold })));
   });
   out.push(G({ x: R[0], y: R[1] }, sayBubble('here’s how…', e1, x1, { tail: 'right', w: 300 })));
@@ -254,8 +256,9 @@ SCENES.ryle = {
       explain: S.cue('explain'), answer: S.cue('answer'), argue: S.cue('argue'),
       L1: S.line(1).start, L2: S.line(2).start, L3: S.line(3).start,
     };
-    // phase swaps: each phase has fully left (fade FD, ending at sw) before the next one's headline enters at sw
-    const FD = 0.34;
+    // phase swaps: the old phase fades out over FD, ending at sw; the next one starts 0.1 s before sw, when the old is
+    // under 10%, so two headlines are never half-visible together and no frame goes blank
+    const FD = SWAP_FD;
     c.sw1 = c.L1 + 0.05; c.sw2 = c.L2 - 0.26; c.sw3 = c.L3 - 0.1;
     const X = exitAt(t, S.end - 0.3, 0.4);
     const out = [];
@@ -264,13 +267,15 @@ SCENES.ryle = {
     if (o1 > 0) {
       const A = [];
       const eH = enter(t, S.start + 0.02, { dy: 14 });
-      A.push(G({ o: eH.o, y: eH.y }, headline([{ t: 'What kind of ' }, { t: 'knowledge', fill: C.goldDeep }, { t: '?' }])));
-      const K = HEAD_K(), hx = 610, hy = 612, hs = 0.76;
+      A.push(G({ o: eH.o * hdOut(t, c.sw1), y: eH.y }, headline([{ t: 'What kind of ' }, { t: 'knowledge', fill: C.goldDeep }, { t: '?' }])));
+      // the head starts centred, then makes room for Ryle's portrait (reframe, so neither half of the frame sits empty)
+      const mv = P(t, c.ryle - 0.85, 0.8, 'inOut');
+      const K = HEAD_K(), hx = lerp(850, 610, mv), hy = 612, hs = 0.76;
       const eHd = enter(t, S.start + 0.08, { dy: 20, from: 0.94, d: 0.7 });
       A.push(G({ x: hx, y: hy + eHd.y, s: hs * eHd.s, o: eHd.o }, bigHead(t), constellation(t, K, { t0: S.start + 0.35, dur: 1.9, size: 7, lineW: 2.6, glow: 1 + 0.3 * P(t, c.ryle, 0.6) })));
       const qp = P(t, S.start + 0.95, 0.55, 'outBack');
       const qDim = 1 - 0.75 * P(t, c.ryle + 0.2, 0.6);
-      if (qp > 0) A.push(G({ x: 905, y: 395 + wobble(t, 0.55, 7), s: qp, r: lerp(-24, 8, qp) + wobble(t, 0.4, 3), o: clamp(qp * 2) * qDim }, T('?', 0, 44, { font: 'serif', size: 136, weight: 700, fill: C.goldDeep, anchor: 'middle' })));
+      if (qp > 0) A.push(G({ x: hx + 295, y: 395 + wobble(t, 0.55, 7), s: qp, r: lerp(-24, 8, qp) + wobble(t, 0.4, 3), o: clamp(qp * 2) * qDim }, T('?', 0, 44, { font: 'serif', size: 136, weight: 700, fill: C.goldDeep, anchor: 'middle' })));
       const eC = enter(t, c.ryle - 0.55, { d: 0.65 });
       if (eC.o > 0) A.push(G({ x: 1340, y: 595 + eC.y, s: eC.s, r: 1.5, o: eC.o }, rylePortrait()));
       const front = once('ryle_front', () => [...K.pts.keys()].sort((a, b) => K.pts[b][0] - K.pts[a][0])[1]);
@@ -279,14 +284,14 @@ SCENES.ryle = {
       out.push(G({ o: o1, y: -10 * (1 - o1) }, A));
     }
     // ---- phase 2: intelligent behaviour
-    const o2 = t > c.sw1 - 0.02 ? 1 - P(t, c.sw2 - FD, FD, 'inOut') : 0;
+    const o2 = t > c.sw1 - 0.12 ? 1 - P(t, c.sw2 - FD, FD, 'inOut') : 0;
     if (o2 > 0) {
       const B = [];
-      const eH = enter(t, c.sw1, { dy: 14 });
-      B.push(G({ o: eH.o, y: eH.y }, headline([{ t: 'Intelligent behaviour' }])));
+      const eH = enter(t, c.sw1 - 0.1, { dy: 14 });
+      B.push(G({ o: eH.o * hdOut(t, c.sw2), y: eH.y }, headline([{ t: 'Intelligent behaviour' }])));
       const panels = [jokePanel, fishPanel, lapsePanel];
       panels.forEach((fn, i) => {
-        const e = enter(t, c.sw1 + 0.1 + i * 0.14, { d: 0.55, dy: 30 });
+        const e = enter(t, c.sw1 + i * 0.14, { d: 0.55, dy: 30 });
         if (e.o <= 0) return;
         const px = 380 + i * 580, py = 565;
         const tk = i < 2 ? P(t, c.well - 0.3 + i * 0.16, 0.5) : P(t, c.lapses + 0.5, 0.5);
@@ -301,10 +306,10 @@ SCENES.ryle = {
       out.push(G({ o: o2, y: -10 * (1 - o2) }, B));
     }
     // ---- phase 3: not rule-following — the regress
-    const o3 = t > c.sw2 - 0.02 ? 1 - P(t, c.sw3 - FD, FD, 'inOut') : 0;
+    const o3 = t > c.sw2 - 0.12 ? 1 - P(t, c.sw3 - FD, FD, 'inOut') : 0;
     if (o3 > 0) out.push(G({ o: o3, y: -10 * (1 - o3) }, rulesPhase(t, c)));
     // ---- phase 4: having a theory goes further
-    if (t > c.sw3 - 0.02) out.push(theoryTalk(t, c));
+    if (t > c.sw3 - 0.12) out.push(theoryTalk(t, c));
     return G({ o: X.o, y: X.y }, out);
   },
   sfx(S) {
@@ -313,9 +318,10 @@ SCENES.ryle = {
     return [
       { t: S.start + 0.02, type: 'whoosh', dur: 0.45, gain: 0.4 }, { t: S.start + 0.4, type: 'chime', note: 0, gain: 0.5 },
       { t: S.start + 0.95, type: 'pop', pitch: 0.8, gain: 0.5 },
+      { t: c('ryle') - 0.85, type: 'whoosh', dur: 0.7, gain: 0.25 },
       { t: c('ryle') - 0.55, type: 'pop', pitch: 0.9, gain: 0.7 }, { t: c('ryle') - 0.2, type: 'swish', gain: 0.4 },
       { t: sw1 - 0.05, type: 'whoosh', dur: 0.5, gain: 0.4 },
-      ...[0, 1, 2].map(i => ({ t: sw1 + 0.1 + i * 0.14, type: 'pluck', note: [0, 2, 4][i], gain: 0.4 })),
+      ...[0, 1, 2].map(i => ({ t: sw1 + i * 0.14, type: 'pluck', note: [0, 2, 4][i], gain: 0.4 })),
       { t: c('joke') - 0.3, type: 'pop', pitch: 1.1, gain: 0.5 }, { t: c('joke') + 0.55, type: 'pop', pitch: 1.45, gain: 0.45 },
       { t: c('joke') + 0.85, type: 'pop', pitch: 1.65, gain: 0.4 },
       { t: c('fish') - 0.2, type: 'swish', gain: 0.6 }, { t: c('fish') + 0.85, type: 'plop', gain: 0.8 },
@@ -323,12 +329,12 @@ SCENES.ryle = {
       { t: c('well') - 0.3, type: 'pluck', note: 4, gain: 0.5 }, { t: c('well') - 0.14, type: 'pluck', note: 7, gain: 0.5 },
       { t: c('lapses') - 0.4, type: 'pop', pitch: 1.3, gain: 0.5 }, { t: c('lapses') - 0.15, type: 'scribble', dur: 0.3, gain: 0.6 },
       { t: c('lapses') + 0.15, type: 'scribble', dur: 0.45, gain: 0.3 }, { t: c('lapses') + 0.5, type: 'pluck', note: 9, gain: 0.5 },
-      { t: sw2 - 0.3, type: 'whoosh', dur: 0.5, gain: 0.4 }, { t: sw2 + 0.3, type: 'thud', gain: 0.6 },
+      { t: sw2 - 0.3, type: 'whoosh', dur: 0.5, gain: 0.4 }, { t: sw2 + 0.2, type: 'thud', gain: 0.6 },
       { t: c('rules2') - 0.55, type: 'swish', gain: 0.35 }, { t: c('rules2') - 0.05, type: 'thud', gain: 0.5 },
       ...[0, 1, 2, 3, 4, 5].map(m => ({ t: c('regress') - 0.35 + 0.9 * (1 - Math.pow(0.72, m)), type: 'tick', gain: 0.45 - m * 0.04, pitch: 1 + m * 0.12 })),
       { t: c('regress') + 0.15, type: 'rise', dur: 0.6, gain: 0.4 },
       { t: c('regress') + 0.4, type: 'scribble', dur: 0.4, gain: 0.6 }, { t: c('regress') + 0.55, type: 'fizzle', gain: 0.45 },
-      { t: sw3 - 0.05, type: 'whoosh', dur: 0.5, gain: 0.4 }, { t: sw3 + 0.5, type: 'chime', note: 2, gain: 0.6 },
+      { t: sw3 - 0.05, type: 'whoosh', dur: 0.5, gain: 0.4 }, { t: sw3 + 0.4, type: 'chime', note: 2, gain: 0.6 },
       { t: c('explain') - 0.3, type: 'pop', pitch: 1.0, gain: 0.6 },
       { t: c('answer') - 0.35, type: 'pop', pitch: 1.25, gain: 0.55 }, { t: c('answer') + 0.15, type: 'pop', pitch: 0.95, gain: 0.55 },
       { t: c('argue') - 0.3, type: 'pop', pitch: 1.3, gain: 0.55 }, { t: c('argue') + 0.1, type: 'pop', pitch: 0.9, gain: 0.55 },
@@ -434,30 +440,33 @@ const pageK = () => once('newton_pageK', () => {
 function newtonA(t, S, c) {
   const out = [];
   const eH = enter(t, S.start + 0.02, { dy: 14 });
-  out.push(G({ o: eH.o, y: eH.y }, headline([{ t: 'A ' }, { t: 'theory', fill: C.goldDeep }, { t: ' isn’t just its laws' }], { size: 58 })));
-  // the board: the laws
-  const bx = 960, by = 338;
+  out.push(G({ o: eH.o * hdOut(t, c.swA), y: eH.y }, headline([{ t: 'A ' }, { t: 'theory', fill: C.goldDeep }, { t: ' isn’t just its laws' }], { size: 58 })));
+  // the board: the laws. It starts big and centred, then lifts into place as "Newton's theory" begins (reframe)
+  const mvB = P(t, c.newton - 0.45, 0.8, 'inOut');
+  const bx = 960, by = lerp(560, 338, mvB), bs = lerp(1.45, 1, mvB);
   const eB = enter(t, S.start + 0.1, { dy: 20, d: 0.6 });
   const glowB = P(t, c.newton - 0.35, 0.7);
   const s1 = 'F = m·a', s2 = 'F = G·Mm / r²';
   const w1 = measure(s1, 88, 'hand', 700), w2 = measure(s2, 50, 'hand', 700);
-  out.push(G({ x: bx, y: by + eB.y, s: eB.s, o: eB.o },
+  out.push(G({ x: bx, y: by + eB.y, s: bs * eB.s, o: eB.o },
     glowB > 0 ? ellipse(0, 0, 420, 190, { fill: 'url(#gGlow)', o: 0.45 * glowB * (1 + 0.1 * Math.sin(t * 3)) }) : '',
     chalkboard(500, 176),
     typeText(s1, P(t, S.start + 0.4, 0.7, 'linear'), -w1 / 2, 8, { font: 'hand', size: 88, weight: 700, fill: CHALK }),
     typeText(s2, P(t, S.start + 1.1, 0.7, 'linear'), -w2 / 2, 66, { font: 'hand', size: 50, weight: 700, fill: CHALK, o: 0.85 })));
   const eL = P(t, S.start + 0.9, 0.45);
-  if (eL > 0) out.push(G({ o: eL }, hand('the laws', 668, 350, { size: 40, anchor: 'end' })));
+  if (eL > 0) out.push(G({ o: eL }, hand('the laws', bx - 292 * bs, by + 12 * bs, { size: lerp(48, 40, mvB), anchor: 'end' })));
   // "Newton's theory": the laws plus how they apply
-  const eN = P(t, c.newton - 0.2, 0.45);
-  if (eN > 0) out.push(G({ o: eN, y: 8 * (1 - eN) }, hand('Newton’s theory', 960, 510, { size: 50, fill: C.goldDeep })));
+  const eN = P(t, c.newton + 0.1, 0.45);
+  if (eN > 0) out.push(G({ o: eN, y: 8 * (1 - eN) }, hand('Newton’s theory', 960, by + 172 * bs, { size: 50, fill: C.goldDeep })));
   // the pendulum (left of the board) and the orbit (right), fed by gold threads from the board;
   // each one's similar case sits further out, so threads and ≈ links never cross
   const pvx = 620, pvy = 512, L = 232, T0 = 1.9;
   const tp = c.pendulum - 0.3, tq = c.planets - 0.3, ts = c.similar - 0.3;
-  out.push(drawPath(arcPath(800, 446, pvx + 4, pvy - 14, 0.22), P(t, tp - 0.9, 0.95, 'inOut'), { stroke: C.goldDeep, sw: 3, o: 0.85 }));
+  // the threads leave the board on "Newton's theory" and reach each case as it appears
+  const th0 = c.newton + 0.1, th1 = c.newton + 0.35;
+  out.push(drawPath(arcPath(800, 446, pvx + 4, pvy - 14, 0.22), P(t, th0, Math.max(0.6, tp - th0), 'inOut'), { stroke: C.goldDeep, sw: 3, o: 0.85 }));
   const ox = 1236, oy = 660, a = 172, ecc = 0.5, b = a * Math.sqrt(1 - ecc * ecc), sunX = ox + a * ecc;
-  out.push(drawPath(arcPath(1150, 430, sunX - 6, oy - 30, -0.2), P(t, tq - 0.9, 0.95, 'inOut'), { stroke: C.goldDeep, sw: 3, o: 0.85 }));
+  out.push(drawPath(arcPath(1150, 430, sunX - 6, oy - 30, -0.2), P(t, th1, Math.max(0.6, tq - th1), 'inOut'), { stroke: C.goldDeep, sw: 3, o: 0.85 }));
   const theta = (tt, t0) => 0.46 * Math.cos(2 * Math.PI * (tt - t0) / T0);
   const eP = enter(t, tp, { d: 0.5 });
   if (eP.o > 0) {
@@ -517,11 +526,11 @@ function newtonA(t, S, c) {
 
 function newtonB(t, S, c) {
   const out = [];
-  const eH = enter(t, c.swA, { dy: 14 });
-  out.push(G({ o: eH.o, y: eH.y }, headline([{ t: 'Similarity', fill: C.goldDeep }, { t: ' can’t be put into rules' }], { size: 58 })));
+  const eH = enter(t, c.swA - 0.1, { dy: 14 });
+  out.push(G({ o: eH.o * hdOut(t, c.swB), y: eH.y }, headline([{ t: 'Similarity', fill: C.goldDeep }, { t: ' can’t be put into rules' }], { size: 58 })));
   // the rulebook: centre first, then it moves left to make room for faces and tunes
   const slide = P(t, c.faces - 0.9, 0.75, 'inOut');
-  const eR = enter(t, c.swA + 0.15, { d: 0.6, dy: 30 });
+  const eR = enter(t, c.swA + 0.05, { d: 0.6, dy: 30 });
   const xp = P(t, c.norules + 1.0, 0.45, 'inOut');
   const shake = t > c.norules + 1.0 && t < c.norules + 1.5 ? Math.sin(t * 60) * 5 * (1 - P(t, c.norules + 1.0, 0.5)) : 0;
   const rx = lerp(960, 500, slide) + shake, ry = 575, rs = lerp(1, 0.9, slide);
@@ -551,14 +560,14 @@ function newtonB(t, S, c) {
 
 function newtonC(t, S, c) {
   const out = [];
-  const eH = enter(t, c.swB, { dy: 14 });
+  const eH = enter(t, c.swB - 0.1, { dy: 14 });
   out.push(G({ o: eH.o, y: eH.y }, headline([{ t: 'A ' }, { t: 'theory', fill: C.goldDeep }, { t: ' can’t be fully written down' }], { size: 58 })));
   const px = 960, py = 610;
-  const eP = enter(t, c.swB + 0.02, { d: 0.6, dy: 30 });
+  const eP = enter(t, c.swB - 0.08, { d: 0.6, dy: 30 });
   out.push(G({ x: px, y: py + eP.y, s: eP.s, o: eP.o }, docCard({ w: 340, h: 440, lines: 0, heading: false, seed: 91 })));
   // the constellation grows from the page centre, bigger than the page; what's outside spills away
   const K = pageK(), n = K.pts.length;
-  const g0 = c.swB + 0.1, gd = 0.75;
+  const g0 = c.swB + 0.02, gd = 0.75;
   const sp = P(t, c.cantwrite + 0.75, 1.15, 'inOut');
   const ink = P(t, c.cantwrite + 0.9, 0.6);
   const inside = K.pts.map(p => Math.abs(p[0]) < 148 && Math.abs(p[1]) < 196);
@@ -603,16 +612,16 @@ SCENES.newton = {
       newton: S.cue('newton'), pendulum: S.cue('pendulum'), planets: S.cue('planets'), similar: S.cue('similar'),
       norules: S.cue('norules'), faces: S.cue('faces'), tunes: S.cue('tunes'), cantwrite: S.cue('cantwrite'), L1: S.line(1).start,
     };
-    // phase swaps: the old phase has fully left (fade FD, ending at sw) before the new headline enters at sw
-    const FD = 0.32;
+    // phase swaps: the old phase fades out over FD, ending at sw; the next starts 0.1 s before sw (old under 10%)
+    const FD = SWAP_FD;
     c.swA = c.L1 + 0.1; c.swB = c.cantwrite + 0.05;
     const X = exitAt(t, S.end - 0.3, 0.4);
     const out = [];
     const oA = 1 - P(t, c.swA - FD, FD, 'inOut');
     if (oA > 0) out.push(G({ o: oA, y: -10 * (1 - oA) }, newtonA(t, S, c)));
-    const oB = t > c.swA - 0.02 ? 1 - P(t, c.swB - FD, FD, 'inOut') : 0;
+    const oB = t > c.swA - 0.12 ? 1 - P(t, c.swB - FD, FD, 'inOut') : 0;
     if (oB > 0) out.push(G({ o: oB, y: -10 * (1 - oB) }, newtonB(t, S, c)));
-    if (t > c.swB - 0.02) out.push(newtonC(t, S, c));
+    if (t > c.swB - 0.12) out.push(newtonC(t, S, c));
     return G({ o: X.o, y: X.y }, out);
   },
   sfx(S) {
@@ -620,20 +629,20 @@ SCENES.newton = {
     return [
       { t: S.start + 0.02, type: 'whoosh', dur: 0.45, gain: 0.4 }, { t: S.start + 0.4, type: 'scribble', dur: 0.7, gain: 0.4 },
       { t: S.start + 1.1, type: 'scribble', dur: 0.7, gain: 0.3 },
-      { t: c('newton') - 0.35, type: 'chime', note: 1, gain: 0.6 }, { t: c('pendulum') - 1.2, type: 'scribble', dur: 0.9, gain: 0.25 },
+      { t: c('newton') - 0.35, type: 'chime', note: 1, gain: 0.6 }, { t: c('newton') + 0.1, type: 'scribble', dur: 1.2, gain: 0.22 },
       { t: c('pendulum') - 0.3, type: 'pop', pitch: 0.9, gain: 0.6 }, { t: c('pendulum') + 0.1, type: 'swish', gain: 0.3 },
       { t: c('planets') - 0.3, type: 'pop', pitch: 1.1, gain: 0.6 }, { t: c('planets') + 0.1, type: 'whoosh', dur: 0.6, gain: 0.25 },
       { t: c('similar') - 0.3, type: 'pop', pitch: 1.25, gain: 0.5 }, { t: c('similar') - 0.15, type: 'pop', pitch: 1.35, gain: 0.45 },
       { t: c('similar') + 0.35, type: 'chime', note: 4, gain: 0.6 },
       { t: c('similar') + 1.0, type: 'tick', gain: 0.5 }, { t: swA - 0.3, type: 'whoosh', dur: 0.5, gain: 0.4 },
-      { t: swA + 0.3, type: 'thud', gain: 0.45 },
+      { t: swA + 0.2, type: 'thud', gain: 0.45 },
       { t: c('norules') + 0.05, type: 'typing', dur: 1.0, gain: 0.5 }, { t: c('norules') + 1.0, type: 'scribble', dur: 0.45, gain: 0.6 },
       { t: c('norules') + 1.1, type: 'fizzle', gain: 0.45 },
       { t: c('faces') - 0.9, type: 'swish', gain: 0.3 },
       ...[0, 1, 2].map(i => ({ t: c('faces') - 0.35 + i * 0.12, type: 'pop', pitch: 0.95 + i * 0.1, gain: 0.45 })),
       ...[0, 2, 1, 4, 3].map((n, k) => ({ t: c('tunes') - 0.55 + k * 0.08, type: 'pluck', note: n, gain: 0.32 })),
       ...[1, 3, 2, 5, 4].map((n, k) => ({ t: c('tunes') - 0.12 + k * 0.08, type: 'pluck', note: n, gain: 0.32 })),
-      { t: swB - 0.3, type: 'whoosh', dur: 0.5, gain: 0.4 }, { t: swB + 0.1, type: 'chime', note: 0, gain: 0.55 },
+      { t: swB - 0.3, type: 'whoosh', dur: 0.5, gain: 0.4 }, { t: swB, type: 'chime', note: 0, gain: 0.55 },
       { t: c('cantwrite') + 0.75, type: 'whoosh', dur: 1.1, gain: 0.35 }, { t: c('cantwrite') + 1.0, type: 'fizzle', gain: 0.35 },
     ];
   },
@@ -641,12 +650,11 @@ SCENES.newton = {
 
 // ================================================================== ABILITIES
 // World icons for the MAP card: three that matter (right column) and the rest of the world around them.
-const MAP_COLS = [-196, -114, -26], MAP_ROWS = [-156, -72, 12, 96];
+const MAP_COLS = [-196, -114, -26], MAP_ROWS = [-146, -60, 26];
 const MAP_CROWD = [
   { c: 0, r: 0, k: 'bust', skin: C.skin[0], hair: C.hair[2] }, { c: 1, r: 0, k: 'gears' },
-  { c: 0, r: 1, k: 'bank' }, { c: 1, r: 1, k: 'bust', skin: C.skin[3], hair: C.hair[3] },
-  { c: 0, r: 2, k: 'server' }, { c: 1, r: 2, k: 'bust', skin: C.skin[4], hair: C.hair[4] },
-  { c: 0, r: 3, k: 'policy' }, { c: 1, r: 3, k: 'bust', skin: C.skin[1], hair: C.hair[0] }, { c: 2, r: 3, k: 'gears2' },
+  { c: 0, r: 1, k: 'server' }, { c: 1, r: 1, k: 'bust', skin: C.skin[3], hair: C.hair[3] },
+  { c: 0, r: 2, k: 'policy' }, { c: 1, r: 2, k: 'bust', skin: C.skin[4], hair: C.hair[4] },
 ].map(d => ({ ...d, x: MAP_COLS[d.c], y: MAP_ROWS[d.r] }));
 const MAP_KEY = [{ k: 'bank' }, { k: 'bust', skin: C.skin[2], hair: C.hair[1] }, { k: 'policy' }].map((d, i) => ({ ...d, x: MAP_COLS[2], y: MAP_ROWS[i] }));
 function miniIcon(t, d, col) {
@@ -680,7 +688,7 @@ function mapCard(t, c) {
     if (dp > 0) out.push(circle(codeX, codeY[i], 8 * dp, { fill: C.gold }), circle(d.x + 36, d.y, 6 * dp, { fill: C.gold }));
   });
   const lb = P(t, c.relevant + 0.85, 0.45);
-  if (lb > 0) out.push(G({ o: lb, y: 8 * (1 - lb) }, hand('which parts matter', -40, 178, { size: 48, fill: C.goldDeep })));
+  if (lb > 0) out.push(G({ o: lb, y: 8 * (1 - lb) }, hand('which parts matter', -30, 150, { size: 48, fill: C.goldDeep })));
   return out;
 }
 function justifyCard(t, c) {
@@ -723,7 +731,10 @@ function adaptCard(t, c) {
     out.push(G({ x: d.x, y: rowY, s: 1 + 0.08 * hl }, tileShape(d.k, { fill: C.blue }), hl > 0 ? tileShape(d.k, { fill: C.gold, stroke: C.goldDeep, sw: 4, o: clamp(hl) }) : ''));
     const lp = P(t, cmp[i], 0.25, 'out') * (i < 2 ? 1 - P(t, cmp[i] + 0.35, 0.2) : 1 - P(t, c.similarity + 0.3, 0.3));
     if (lp > 0) out.push(line(hov[0], hov[1] + 44, d.x, rowY - 44, { stroke: i === 2 ? C.goldDeep : C.coral, sw: 3, dash: '6 7', o: lp }));
-    if (i < 2) { const np = P(t, cmp[i] + 0.12, 0.2) * (1 - P(t, cmp[i] + 0.4, 0.2)); if (np > 0) out.push(G({ x: d.x, y: rowY - 64, o: np }, T('≠', 0, 10, { font: 'serif', size: 34, weight: 700, fill: C.coral, anchor: 'middle' }))); }
+    if (i < 2) {
+      const np = P(t, cmp[i] + 0.12, 0.2) * (1 - P(t, cmp[i] + 0.42, 0.2));
+      if (np > 0) out.push(G({ x: d.x - 34, y: rowY - 66, s: lerp(0.6, 1, Ease.outBack(clamp(P(t, cmp[i] + 0.12, 0.25)))), o: np }, T('≠', 0, 14, { font: 'serif', size: 48, weight: 700, fill: C.coral, anchor: 'middle' })));
+    }
   });
   // the change request arrives, hovers, then slots in beside the part it resembles
   const arr = P(t, c.adapt - 0.3, 0.7, 'outBack');
@@ -737,17 +748,24 @@ function adaptCard(t, c) {
     const lb = P(t, c.adapt + 0.15, 0.4) * (1 - P(t, c.similarity + 0.1, 0.35));
     if (lb > 0) out.push(G({ o: lb }, hand('change request', 44, -218, { size: 46, fill: C.coral })));
   }
-  const ap = P(t, cmp[2] + 0.2, 0.4) * (1 - P(t, c.similarity + 0.35, 0.3));
-  if (ap > 0) out.push(G({ x: 108, y: -72 }, approx(ap, { r: 24 })));
-  const ok = P(t, c.similarity + 0.85, 0.5);
-  if (ok > 0) out.push(G({ x: 165, y: -70 }, tickBadge(ok, 24)));
+  // ≈ by the matching comparison; it steps aside while the request moves, then settles on an arc joining the pair
+  const ap = P(t, cmp[2] + 0.2, 0.4) * (1 - P(t, c.similarity + 0.2, 0.2));
+  if (ap > 0) out.push(G({ x: 104, y: -76 }, approx(ap, { r: 24 })));
+  const arc = P(t, c.similarity + 0.7, 0.4, 'inOut');
+  if (arc > 0) {
+    const d = arcPath(58, -24, 162, -24, -0.5);
+    out.push(arc < 1 ? drawPath(d, arc, { stroke: C.goldDeep, sw: 3.5 }) : path(d, { stroke: C.goldDeep, sw: 3.5, dash: '9 8' }));
+    out.push(G({ x: 110, y: -52 }, approx(P(t, c.similarity + 0.85, 0.4), { r: 24 })));
+  }
+  const ok = P(t, c.similarity + 0.95, 0.5);
+  if (ok > 0) out.push(G({ x: 200, y: -122 }, tickBadge(ok, 26)));
   return out;
 }
 
 function abilitiesIntro(t, S, c) {
   const out = [];
   const eH = enter(t, S.start + 0.02, { dy: 14 });
-  out.push(G({ o: eH.o, y: eH.y }, headline([{ t: 'A program’s ' }, { t: 'theory', fill: C.goldDeep }, { t: ': how the world will be handled' }], { size: 54 })));
+  out.push(G({ o: eH.o * hdOut(t, c.sw), y: eH.y }, headline([{ t: 'A program’s ' }, { t: 'theory', fill: C.goldDeep }, { t: ': how the world will be handled' }], { size: 54 })));
   const K = HEAD_K(), hx = 960, hy = 598, hs = 0.8;
   const eHd = enter(t, S.start + 0.1, { dy: 20, from: 0.94, d: 0.7 });
   // "Its holder…": the head swells and glows just before the intro clears
@@ -788,7 +806,7 @@ function abilitiesIntro(t, S, c) {
 
 function abilityCards(t, S, c) {
   const out = [];
-  const eH = enter(t, c.sw, { dy: 14 });
+  const eH = enter(t, c.sw - 0.1, { dy: 14 });
   out.push(G({ o: eH.o, y: eH.y }, headline([{ t: 'Three things ' }, { t: 'no document', fill: C.coral }, { t: ' can do' }], { size: 58 })));
   const cards = [
     { n: 1, title: 'MAP', cue: c.map, draw: mapCard },
@@ -799,7 +817,7 @@ function abilityCards(t, S, c) {
   const allOn = P(t, c.similarity + 1.0, 0.5);
   const anyActive = P(t, c.map - 0.5, 0.35);
   cards.forEach((d, i) => {
-    const e = enter(t, c.sw + 0.05 + i * 0.15, { d: 0.55, dy: 30 });
+    const e = enter(t, c.sw - 0.05 + i * 0.15, { d: 0.55, dy: 30 });
     if (e.o <= 0) return;
     const focus = Math.min(P(t, d.cue - 0.5, 0.35), 1 - P(t, ends[i], 0.35));
     const dimK = lerp(1, lerp(0.6, 1, Math.max(focus, allOn)), anyActive);
@@ -819,14 +837,14 @@ SCENES.abilities = {
       howhandled: S.cue('howhandled'), three: S.cue('three'), map: S.cue('map'), relevant: S.cue('relevant'),
       justify: S.cue('justify'), adapt: S.cue('adapt'), similarity: S.cue('similarity'),
     };
-    // intro → cards swap: the intro has fully left (fade FD, ending at sw) before the new headline enters at sw
-    const FD = 0.34;
+    // intro → cards swap: the intro fades out over FD, ending at sw; the cards start 0.1 s before sw (intro under 10%)
+    const FD = SWAP_FD;
     c.sw = c.three - 0.2;
     const X = exitAt(t, S.end - 0.3, 0.4);
     const out = [];
     const o1 = 1 - P(t, c.sw - FD, FD, 'inOut');
     if (o1 > 0) out.push(G({ o: o1, y: -10 * (1 - o1) }, abilitiesIntro(t, S, c)));
-    if (t > c.sw - 0.02) out.push(abilityCards(t, S, c));
+    if (t > c.sw - 0.12) out.push(abilityCards(t, S, c));
     return G({ o: X.o, y: X.y }, out);
   },
   sfx(S) {
@@ -838,7 +856,7 @@ SCENES.abilities = {
       { t: c('howhandled') + 1.0, type: 'pop', pitch: 1.2, gain: 0.55 }, { t: c('howhandled') + 1.1, type: 'typing', dur: 0.9, gain: 0.45 },
       { t: c('three') - 1.05, type: 'chime', note: 2, gain: 0.5 },
       { t: sw - 0.3, type: 'whoosh', dur: 0.5, gain: 0.4 },
-      ...[0, 1, 2].map(i => ({ t: sw + 0.05 + i * 0.15, type: 'pluck', note: [0, 2, 4][i], gain: 0.5 })),
+      ...[0, 1, 2].map(i => ({ t: sw - 0.05 + i * 0.15, type: 'pluck', note: [0, 2, 4][i], gain: 0.5 })),
       { t: c('map') - 0.1, type: 'scribble', dur: 0.8, gain: 0.35 }, { t: c('map') + 0.45, type: 'tick', gain: 0.5 },
       { t: c('map') + 0.63, type: 'tick', gain: 0.5 }, { t: c('map') + 0.81, type: 'tick', gain: 0.5 },
       { t: c('relevant') - 0.35, type: 'pop', pitch: 1.1, gain: 0.4 }, { t: c('relevant') - 0.1, type: 'pop', pitch: 1.25, gain: 0.35 },
@@ -848,7 +866,7 @@ SCENES.abilities = {
       { t: c('adapt') - 0.3, type: 'whoosh', dur: 0.6, gain: 0.45 }, { t: c('adapt') + 0.2, type: 'pop', pitch: 1.0, gain: 0.45 },
       { t: c('similarity') - 1.0, type: 'tick', gain: 0.45 }, { t: c('similarity') - 0.6, type: 'tick', gain: 0.45 },
       { t: c('similarity') - 0.1, type: 'chime', note: 5, gain: 0.6 }, { t: c('similarity') + 0.25, type: 'swish', gain: 0.35 },
-      { t: c('similarity') + 0.75, type: 'click', gain: 0.7 }, { t: c('similarity') + 0.9, type: 'pluck', note: 7, gain: 0.45 },
+      { t: c('similarity') + 0.75, type: 'click', gain: 0.7 }, { t: c('similarity') + 0.9, type: 'chime', note: 7, gain: 0.4 }, { t: c('similarity') + 0.95, type: 'pluck', note: 9, gain: 0.45 },
     ];
   },
 };
