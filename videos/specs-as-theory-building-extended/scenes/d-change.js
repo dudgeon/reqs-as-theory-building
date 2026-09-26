@@ -85,7 +85,7 @@ function editorWindow(t, o = {}) {
       lp = ph < 0.3 ? 1 - ph / 0.3 : ph < 0.42 ? 0 : clamp((ph - 0.42) / 0.5);
       out.push(rect(x + 62, ly - 8, w - 78, lineH - 3, { rx: 6, fill: C.sky, o: 0.75 }));
     }
-    out.push(T(String(i + 1), x + 44, ly + 11, { font: 'mono', size: 15, fill: C.ink3, anchor: 'end' }));
+    out.push(T(String(i + 1), x + 50, ly + 14, { font: 'mono', size: 22, fill: C.ink3, anchor: 'end', o: 0.75 }));
     const lx = x + 78 + L.ind * 22;
     let endX = lx;
     for (const [sx, sw, col] of L.segs) {
@@ -106,8 +106,8 @@ function costEdit(t, S, c) {
   const eH = enter(t, S.start + 0.02, { dy: 14 });
   const dimH = 1 - 0.3 * P(t, c.notcost - 0.2, 0.5);
   out.push(G({ o: eH.o * dimH, y: eH.y }, headline([{ t: 'Easy to edit, so ' }, { t: part }], { size }),
-    drawPath(`M${r2(sx0 - 10)} 137 C${r2(sx0 + pw * 0.3)} 128 ${r2(sx0 + pw * 0.7)} 145 ${r2(sx0 + pw + 12)} 131`, P(t, c.fals - 0.45, 0.35, 'inOut'), { stroke: C.coral, sw: 8 })));
-  const sp = P(t, c.fals - 0.12, 0.26, 'linear');
+    drawPath(`M${r2(sx0 - 10)} 137 C${r2(sx0 + pw * 0.3)} 128 ${r2(sx0 + pw * 0.7)} 145 ${r2(sx0 + pw + 12)} 131`, P(t, c.fals - 0.62, 0.35, 'inOut'), { stroke: C.coral, sw: 8 })));
+  const sp = P(t, c.fals - 0.27, 0.26, 'linear');
   if (sp > 0) out.push(G({ x: sx0 + pw / 2 + 6, y: 222, o: dimH }, slam('FALSE', sp, { size: 64, rot: -9 })));
   // the editor: centred, then it slides left to make room for the head
   const slide = P(t, c.notcost - 0.6, 0.8, 'inOut');
@@ -116,7 +116,7 @@ function costEdit(t, S, c) {
   const edDim = 1 - 0.25 * P(t, c.notcost + 0.4, 0.6);
   out.push(G({ x: ex, y: ey + eE.y, s: es * eE.s, o: eE.o * edDim }, editorWindow(t, { t0: S.start + 0.5 })));
   const lb1 = P(t, c.text - 0.25, 0.45);
-  if (lb1 > 0) out.push(G({ o: lb1 * edDim, y: (1 - lb1) * 10 }, hand('program = text', ex, lerp(890, 860, slide), { size: 50, fill: C.ink })));
+  if (lb1 > 0) out.push(G({ o: lb1 * edDim, y: (1 - lb1) * 10 }, hand('program = text', ex, lerp(890, 860, slide), { size: 48, fill: C.ink })));
   // the head that holds the theory
   const hx = 1400, hy = 590, hs = 0.72;
   const eHd = enter(t, c.notcost - 0.4, { dy: 24, d: 0.6, from: 0.9 });
@@ -124,7 +124,7 @@ function costEdit(t, S, c) {
   const glow = 1 + 0.6 * P(t, landT, 0.3) * (1 - P(t, landT + 0.9, 0.8));
   if (eHd.o > 0) {
     out.push(G({ x: hx, y: hy + eHd.y, o: eHd.o }, circle(-10, -30, 280, { fill: 'url(#gGlow)', o: 0.28 * glow }),
-      G({ sx: -hs * eHd.s, sy: hs * eHd.s }, bigHead(t), constellation(t, HEAD_K(), { t0: c.notcost - 0.25, dur: 1.2, size: 7, lineW: 2.6, glow }))));
+      G({ sx: -hs * eHd.s, sy: hs * eHd.s }, bigHead(t), constellation(t, HEAD_K(), { t0: c.notcost - 0.38, dur: 1.2, size: 7, lineW: 2.6, glow }))));
   }
   // the price tag: "$" on the editor, then it slides off to the head and turns into "$$$"
   const tagIn = P(t, c.easy - 0.15, 0.35);
@@ -180,8 +180,8 @@ function renovation(t, t0) {
   parts.forEach(([d, col, sw], i) => out.push(drawPath(d, P(t, t0 + 0.1 + i * 0.07, 0.35, 'inOut'), { stroke: col, sw })));
   const lad = P(t, t0 + 0.55, 0.4, 'outBack');
   if (lad > 0) {
-    const L = [line(0, 0, -26, -250, { stroke: WOOD_D, sw: 6 }), line(32, 0, 6, -250, { stroke: WOOD_D, sw: 6 })];
-    for (let k = 1; k < 8; k++) { const yy = -k * 31, dx = -26 * k * 31 / 250; L.push(line(dx, yy, dx + 32, yy, { stroke: WOOD, sw: 4 })); }
+    const L = [line(0, 0, -18, -178, { stroke: WOOD_D, sw: 6 }), line(32, 0, 14, -178, { stroke: WOOD_D, sw: 6 })];
+    for (let k = 1; k < 6; k++) { const yy = -k * 31, dx = -18 * k * 31 / 178; L.push(line(dx, yy, dx + 32, yy, { stroke: WOOD, sw: 4 })); }
     out.push(G({ x: 236, y: 0, r: lerp(20, 0, lad), o: clamp(lad * 3) }, L));
   }
   return out.join('');
@@ -190,28 +190,28 @@ function costBuild(t, S, c) {
   const out = [];
   const eH = enter(t, c.building - 0.3, { dy: 14 });
   out.push(G({ o: eH.o, y: eH.y }, headline([{ t: 'Altering can cost ' }, { t: 'more', italic: true, fill: C.coral }, { t: ' than rebuilding' }], { size: 56 })));
-  out.push(drawPath('M170 864 L1750 864', P(t, c.building - 0.35, 0.7, 'inOut'), { stroke: C.paper3, sw: 10 }));
+  out.push(drawPath('M150 884 L1770 884', P(t, c.building - 0.35, 0.7, 'inOut'), { stroke: C.paper3, sw: 10 }));
   // altering: the old house under renovation, with a big swinging tag
-  const hx1 = 590, hx2 = 1330, gy = 860;
+  const hx1 = 540, hx2 = 1400, gy = 880, hs = 1.3;
   const e1 = enter(t, c.building - 0.32, { d: 0.6, dy: 30 });
-  out.push(G({ x: hx1, y: gy + e1.y, s: e1.s, o: e1.o }, renovation(t, c.building - 0.3)));
+  out.push(G({ x: hx1, y: gy + e1.y, s: hs * e1.s, o: e1.o }, renovation(t, c.building - 0.3)));
   const tg1 = P(t, c.building + 0.2, 0.3);
-  if (tg1 > 0) out.push(G({ x: hx1 + 196, y: gy - 278, o: tg1 }, hangTag('$$$$', 176, 30 + swing(t, c.building + 0.2, 34) + wobble(t, 0.4, 3), { s: 1.3 })));
+  if (tg1 > 0) out.push(G({ x: hx1 + 196 * hs, y: gy - 278 * hs, o: tg1 }, hangTag('$$$$', 176, 30 + swing(t, c.building + 0.2, 34) + wobble(t, 0.4, 3), { s: 1.45 })));
   const l1 = P(t, c.building + 0.1, 0.4);
-  if (l1 > 0) out.push(G({ o: l1 }, hand('altering', hx1, 940, { size: 44 })));
+  if (l1 > 0) out.push(G({ o: l1 }, hand('altering', hx1, 965, { size: 46 })));
   // rebuilding: the same house, new, rising fast, with a small tag
   const grow = P(t, c.rebuild - 0.35, 0.75, 'linear');
   if (grow > 0) {
     const lit = P(t, c.rebuild + 0.35, 0.4);
-    out.push(G({ x: hx2, y: gy }, house(t, { grow, lit })));
+    out.push(G({ x: hx2, y: gy, s: hs }, house(t, { grow, lit })));
     [[-120, -260], [150, -300], [200, -150]].forEach(([sx, sy], i) => {
       const sp = P(t, c.rebuild + 0.35 + i * 0.1, 0.4, 'outBack') * (1 - P(t, c.rebuild + 1.1 + i * 0.1, 0.5));
-      if (sp > 0) out.push(sparkle(hx2 + sx, gy + sy, 16 * sp * (1 + 0.12 * Math.sin(t * 6 + i)), { fill: C.gold }));
+      if (sp > 0) out.push(sparkle(hx2 + sx * hs, gy + sy * hs, 18 * sp * (1 + 0.12 * Math.sin(t * 6 + i)), { fill: C.gold }));
     });
     const tg2 = P(t, c.rebuild + 0.3, 0.3);
-    if (tg2 > 0) out.push(G({ x: hx2 + 160, y: gy - 196, o: tg2 }, hangTag('$$', 96, 30 + swing(t, c.rebuild + 0.3, 30) + wobble(t, 0.45, 2.5))));
+    if (tg2 > 0) out.push(G({ x: hx2 + 160 * hs, y: gy - 196 * hs, o: tg2 }, hangTag('$$', 96, 30 + swing(t, c.rebuild + 0.3, 30) + wobble(t, 0.45, 2.5), { s: 1.1 })));
     const l2 = P(t, c.rebuild - 0.05, 0.4);
-    if (l2 > 0) out.push(G({ o: l2 }, hand('rebuilding', hx2, 940, { size: 44 })));
+    if (l2 > 0) out.push(G({ o: l2 }, hand('rebuilding', hx2, 965, { size: 46 })));
   }
   return out;
 }
@@ -362,7 +362,7 @@ SCENES.cost = {
       { t: S.start + 0.02, type: 'whoosh', dur: 0.5, gain: 0.4 }, { t: S.start + 0.5, type: 'typing', dur: 2.2, gain: 0.3 },
       { t: c('text') - 0.25, type: 'pop', pitch: 1.0, gain: 0.5 }, { t: easy - 0.15, type: 'swing', gain: 0.5 },
       { t: easy + 0.4, type: 'typing', dur: 1.6, gain: 0.25 },
-      { t: c('false') - 0.45, type: 'scribble', dur: 0.35, gain: 0.55 }, { t: c('false') - 0.1, type: 'thud', gain: 0.85 },
+      { t: c('false') - 0.62, type: 'scribble', dur: 0.35, gain: 0.55 }, { t: c('false') - 0.13, type: 'thud', gain: 0.85 },
       { t: c('notcost') - 0.6, type: 'whoosh', dur: 0.6, gain: 0.4 }, { t: c('notcost') - 0.25, type: 'chime', note: 2, gain: 0.55 },
       { t: c('notcost') - 0.12, type: 'swish', gain: 0.45 }, { t: c('notcost') + 0.63, type: 'swing', gain: 0.5 },
       { t: c('building') - 0.62, type: 'whoosh', dur: 0.45, gain: 0.35 }, { t: c('building') - 0.3, type: 'pop', pitch: 0.8, gain: 0.5 },
@@ -500,11 +500,12 @@ function decayLapse(t, S, c) {
     const glow = i === 0 ? P(t, c.quality - 0.1, 0.6) * (1 + 0.15 * Math.sin(t * 2.4)) : 0;
     out.push(G({ x, y: y + e.y, s: s * e.s, o }, miniProg(t, { extra: DECAY_PATCHES.slice(0, v.n), grey: v.g, jit: v.g, glow, flow: glow, trace: i === 0 ? P(t, c.quality + 0.25, 1.4, 'linear') : 0 })));
     const pl = i === 0 ? oOld : 1;
-    if (pl > 0) out.push(G({ x, y: y - 88 * s - 36 + e.y, o: o * pl }, pill('v' + (i + 1), { size: 24, stroke: i ? mixColor(C.ink2, GREY, v.g) : C.ink2, color: i ? mixColor(C.ink2, GREY, v.g) : C.ink2 })));
+    if (pl > 0) out.push(G({ x, y: y - 88 * s - 78 + e.y, o: o * pl }, pill('v' + (i + 1), { size: 24, stroke: i ? mixColor(C.ink2, GREY, v.g) : C.ink2, color: i ? mixColor(C.ink2, GREY, v.g) : C.ink2 })));
     if (i > 0) out.push(G({ o: o }, handArrow(vs[i - 1].x + 160, 555, v.x - 160, 555, P(t, c.decay - 0.45 + i * 0.3, 0.35, 'inOut'), { color: C.ink3, bend: -0.15, sw: 4, head: 14 })));
   });
-  const lb = P(t, c.decay + 0.3, 0.4) * oOld;
-  if (lb > 0) out.push(G({ o: lb }, hand('decay', 1360, 790, { size: 50, fill: '#8A8F96' })));
+  const eH = enter(t, c.decay - 0.3, { dy: 14 });
+  const hO = eH.o * (1 - P(t, c.quality - 0.6, 0.35));
+  if (hO > 0) out.push(G({ o: hO, y: eH.y }, headline([{ t: 'That’s how programs ' }, { t: 'decay', italic: true, fill: '#8A8F96' }], { size: 56 })));
   return out;
 }
 
@@ -787,7 +788,7 @@ function revivalRebuild(t, S, c) {
   out.push(G({ x: -780 * gone, y: 20 * gone, r: -18 * gone, o: eN.o * (1 - P(t, c.afresh + 0.05, 0.25)) },
     G({ x: 300, y: 700, r: -4, s: 0.62 }, codeCard({ w: 220, h: 170, seed: 91 })),
     G({ x: 548, y: 712, r: -8, s: 0.5 }, docCard({ w: 150, h: 190, seed: 93 })), G({ x: 568, y: 706, r: 3, s: 0.5 }, docCard({ w: 150, h: 190, seed: 94 })),
-    G({ x: 590, y: 700, r: 10, s: 0.5 }, docCard({ w: 150, h: 190, seed: 95, title: 'docs' }))));
+    G({ x: 590, y: 700, r: 10, s: 0.5 }, docCard({ w: 150, h: 190, seed: 95 }))));
   return out;
 }
 
@@ -882,13 +883,13 @@ SCENES.revival = {
     const out = [];
     // phase 1: rebuild from the texts; STRICTLY IMPOSSIBLE slams across (with a small shake)
     const oA = 1 - P(t, c.afresh - 0.45, 0.4, 'inOut');
-    const lt = t - (c.impossible - 0.02);
+    const lt = t - (c.impossible - 0.13);
     const shake = lt > 0 && lt < 0.5 ? 9 * Math.exp(-9 * lt) * Math.sin(lt * 70) : 0;
     if (oA > 0 || t < c.afresh + 0.3) {
       const A = revivalRebuild(t, S, c);
       const pile = A.pop();
       out.push(G({ o: oA, x: shake, y: shake * 0.5 }, A), pile);
-      const sp = P(t, c.impossible - 0.12, 0.24, 'linear');
+      const sp = P(t, c.impossible - 0.28, 0.24, 'linear');
       if (sp > 0) out.push(G({ x: 1000 + shake, y: 440, o: oA }, slam('STRICTLY IMPOSSIBLE', sp, { size: 60, rot: -8 })));
     }
     // phase 2: a new team, afresh
@@ -907,7 +908,7 @@ SCENES.revival = {
       ...[0, 1, 2].map(i => ({ t: c('revive') + 0.3 + i * 0.6, type: 'pop', pitch: 1.1 + i * 0.08, gain: 0.25 })),
       { t: orig - 0.25, type: 'whoosh', dur: 0.5, gain: 0.3 }, { t: alone + 0.3, type: 'pop', pitch: 0.7, gain: 0.5 },
       { t: alone + 0.55, type: 'scribble', dur: 0.4, gain: 0.3 },
-      { t: c('impossible') - 0.12, type: 'thud', gain: 1.0 }, { t: c('impossible') - 0.05, type: 'fizzle', gain: 0.3 },
+      { t: c('impossible') - 0.14, type: 'thud', gain: 1.0 }, { t: c('impossible') + 0.05, type: 'fizzle', gain: 0.3 },
       { t: c('afresh') - 0.55, type: 'whoosh', dur: 0.7, gain: 0.55 },
       ...[0, 1, 2].map(i => ({ t: c('afresh') - 0.1 + i * 0.12, type: 'pop', pitch: 0.95 + i * 0.1, gain: 0.35 })),
       { t: c('afresh') + 0.3, type: 'chime', note: 0, gain: 0.5 }, { t: c('afresh') + 1.0, type: 'scribble', dur: 1.8, gain: 0.25 },
