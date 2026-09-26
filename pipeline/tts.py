@@ -19,7 +19,7 @@ import tempfile
 import numpy as np
 
 sys.path.insert(0, os.path.dirname(__file__))
-from common import BUILD, SR, clean_text, iter_lines, load_narration, read_audio, resample, write_wav  # noqa: E402
+from common import BUILD, ROOT, SR, clean_text, iter_lines, load_narration, read_audio, resample, write_wav  # noqa: E402
 
 OPENROUTER_URL = os.environ.get("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1").rstrip("/") + "/audio/speech"
 
@@ -176,12 +176,12 @@ def main():
         dur = len(audio) / SR
         total += dur
         manifest["lines"].append({"scene": scene["id"], "index": i, "text": clean_text(line["text"]),
-                                  "spoken": spoken, "file": str(path.relative_to(BUILD.parent)),
+                                  "spoken": spoken, "file": str(path.relative_to(ROOT)),
                                   "duration": round(dur, 4)})
     (BUILD / "vo.json").write_text(json.dumps(manifest, indent=2, ensure_ascii=False))
     words = sum(len(l["text"].split()) for l in manifest["lines"])
     print(f"{len(manifest['lines'])} lines, {words} words, {total:.1f}s of speech "
-          f"({words / total * 60:.0f} wpm) -> build/vo.json")
+          f"({words / total * 60:.0f} wpm) -> {(BUILD / 'vo.json').relative_to(ROOT)}")
 
 
 if __name__ == "__main__":

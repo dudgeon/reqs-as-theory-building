@@ -3,8 +3,8 @@
 
   python publish/page.py
 
-Makes a web encode of out/<slug>.mp4 (CRF 24, comfortably under the 15 MB per-file limit), a
-poster frame, copies the storyboard keyframes, and fills publish/template.html. Then publish
+Makes a web encode of out/<slug>.mp4 (CRF 24; keep each file under the 15 MB limit), a poster
+frame, copies the storyboard keyframes, and fills videos/<video>/page.html. Then publish
 build/page/index.html with the Artifact tool, passing the supporting files this script prints.
 
 Artifacts don't serve .vtt files, so captions are embedded in the page as JSON. The page builds
@@ -20,10 +20,10 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "pipeline"))
-from common import BUILD, load_narration, slug  # noqa: E402
+from common import BUILD, PROJECT, load_narration, slug  # noqa: E402
 from storyboard import beats  # noqa: E402
 
-TEMPLATE = ROOT / "publish" / "template.html"
+TEMPLATE = PROJECT / "page.html"
 OUT = BUILD / "page"
 
 
@@ -71,7 +71,7 @@ def main():
     ffmpeg("-ss", f"{poster_t:.2f}", "-i", str(master), "-frames:v", "1", "-vf", "scale=1280:720", "-q:v", "3", str(OUT / "poster.jpg"))
     for f in (OUT / "frames").glob("*.jpg"):
         f.unlink()
-    for f in sorted((ROOT / "storyboard" / "frames").glob("*.jpg")):
+    for f in sorted((PROJECT / "storyboard" / "frames").glob("*.jpg")):
         shutil.copy(f, OUT / "frames" / f.name)
 
     labels = {s["id"]: s.get("label", s["id"].title()) for s in narr["scenes"]}
@@ -86,6 +86,12 @@ def main():
     m, s = divmod(round(tl["duration"]), 60)
     page = TEMPLATE.read_text()
     page = re.sub(r"\A<!--.*?-->\n", "", page, flags=re.S)  # drop the template's own header comment
+    chapters = "\n".join(
+        f'        <li><button type="button" class="chap" data-t="{c["start"]:.2f}"><span class="tc">{tc(c["start"])}</span>'
+        f'<span>{c["n"]} · {html.escape(c["title"], quote=False)}</span></button></li>' for c in tl.get("chapters", []))
+    optional = {"{{CHAPTERS}}": chapters}
+    for key, value in optional.items():
+        page = page.replace(key, value)
     for key, value in {
         "{{TRANSCRIPT}}": transcript,
         "{{BEATS}}": beat_html,

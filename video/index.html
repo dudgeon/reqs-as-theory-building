@@ -49,10 +49,29 @@
   <input id="scrub" type="range" min="0" max="90" step="0.0333" value="0">
   <span id="clock">0.00s</span>
 </div>
-<script src="timeline.js"></script>
 <script src="engine.js"></script>
 <script src="shapes.js"></script>
-<script src="scenes.js"></script>
-<script src="main.js"></script>
+<script>
+  // Load the chosen video (?video=<folder in videos/>): its timeline, then its scene files, then main.js.
+  (function () {
+    const params = new URLSearchParams(location.search);
+    const video = params.get('video');
+    const load = src => new Promise((resolve, reject) => {
+      const el = document.createElement('script');
+      el.src = src;
+      el.onload = resolve;
+      el.onerror = () => reject(new Error('could not load ' + src));
+      document.body.appendChild(el);
+    });
+    window.videoLoaded = (async () => {
+      if (!video) throw new Error('add ?video=<folder in videos/> to the URL');
+      const base = '../videos/' + encodeURIComponent(video) + '/';
+      await load(base + 'timeline.js');
+      for (const f of window.TIMELINE.sceneFiles || ['scenes.js']) await load(base + f);
+      await load('main.js');
+    })();
+    window.videoLoaded.catch(e => { document.getElementById('clock').textContent = e.message; document.body.classList.add('preview'); });
+  })();
+</script>
 </body>
 </html>

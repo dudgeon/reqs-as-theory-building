@@ -7,18 +7,25 @@ moments in one image. This is how layout collisions and blank transition frames 
   python3 tools/review.py transitions                   # frames around every scene boundary (needs build/frames)
   python3 tools/review.py sample --every 1              # the whole cut at 1 fps (needs build/frames)
   python3 tools/review.py mp4 17.5 50.2                 # frames decoded from the final MP4
+  python3 tools/review.py cues --scenes compiler,monitor --name groupB   # only some scenes, own file names
 
-Sheets are written to build/review/<mode>_NN.jpg: 16 tiles per sheet (4x4), each 480x270 and stamped
-with its time. One 4x4 sheet costs a reviewing agent about as much context as a single full frame.
+Set VIDEO=<folder in videos/> when there is more than one video. Sheets are written to
+build/<video>/review/<name or mode>_NN.jpg: 16 tiles per sheet (4x4), each 480x270 and stamped with
+its time. One 4x4 sheet costs a reviewing agent about as much context as a single full frame.
 """
 import argparse
 import json
+import os
 import pathlib
 import subprocess
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-BUILD = ROOT / "build"
+_names = sorted(p.name for p in (ROOT / "videos").iterdir() if (p / "narration.json").exists())
+VIDEO = os.environ.get("VIDEO") or (_names[0] if len(_names) == 1 else None)
+if VIDEO not in _names:
+    sys.exit(f"Set VIDEO to one of: {', '.join(_names)}")
+BUILD = ROOT / "build" / VIDEO
 OUT = BUILD / "review"
 FONT = next((p for p in ["/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
                          "/usr/share/fonts/TTF/DejaVuSans-Bold.ttf",
@@ -52,7 +59,7 @@ def tile(sources, labels, name, cols=4, w=480, h=270):
 
 def render_stills(times):
     subprocess.run(["node", str(ROOT / "video" / "render.js"), "--stills", ",".join(f"{t:.2f}" for t in times)],
-                   check=True, stdout=subprocess.DEVNULL)
+                   check=True, stdout=subprocess.DEVNULL, env={**os.environ, "VIDEO": VIDEO})
     return [BUILD / "stills" / f"t_{t:06.2f}.jpg" for t in times]
 
 
@@ -68,6 +75,8 @@ def main():
     ap.add_argument("mode", choices=["stills", "cues", "transitions", "sample", "mp4"])
     ap.add_argument("times", nargs="*", type=float)
     ap.add_argument("--every", type=float, default=1.0, help="sample interval in seconds (sample mode)")
+    ap.add_argument("--scenes", help="comma-separated scene ids to limit cues/transitions to")
+    ap.add_argument("--name", help="output file prefix (default: the mode), so parallel reviewers don't collide")
     a = ap.parse_args()
     tl = timeline()
     fps = tl["fps"]
@@ -76,21 +85,25 @@ def main():
         times = a.times
         srcs = render_stills(times)
     elif a.mode == "cues":
-        items = sorted((v, k) for k, v in tl["cues"].items() if "." in k)
+        keep = set(a.scenes.split(",")) if a.scenes else None
+        items = sorted((v, k) for k, v in tl["cues"].items() if "." in k and (keep is None or k.split(".")[0] in keep))
         times = [min(v + 0.6, tl["duration"] - 0.05) for v, _ in items]
         srcs = render_stills(times)
         labels = [f"{t:.2f}s {k}" for t, (_, k) in zip(times, items)]
     elif a.mode == "transitions":
         times = []
+        keep = set(a.scenes.split(",")) if a.scenes else None
         for s in tl["scenes"][1:]:
-            times += [max(0, s["start"] - 0.25), s["start"], s["start"] + 0.25, s["start"] + 0.5]
+            if keep is None or s["id"] in keep:
+                times += [max(0, s["start"] - 0.25), s["start"], s["start"] + 0.25, s["start"] + 0.5]
         srcs = [frame_file(t, fps) for t in times]
     elif a.mode == "sample":
         n = int(tl["duration"] / a.every)
         times = [round(i * a.every + a.every / 2, 2) for i in range(n)]
         srcs = [frame_file(t, fps) for t in times]
     else:  # mp4
-        mp4 = next((ROOT / "out").glob("*.mp4"))
+        slug = json.loads((ROOT / "videos" / VIDEO / "narration.json").read_text()).get("slug") or VIDEO
+        mp4 = ROOT / "out" / f"{slug}.mp4"
         OUT.mkdir(parents=True, exist_ok=True)
         times, srcs = a.times, []
         for t in times:
@@ -98,7 +111,7 @@ def main():
             subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", str(t), "-i", str(mp4), "-frames:v", "1", "-q:v", "2", str(dst)], check=True)
             srcs.append(dst)
     labels = labels or [f"{t:.2f}s" for t in times]
-    for sheet in tile(srcs, labels, a.mode):
+    for sheet in tile(srcs, labels, a.name or a.mode):
         print(sheet.relative_to(ROOT))
 
 

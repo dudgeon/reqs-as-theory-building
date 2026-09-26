@@ -1,12 +1,7 @@
 // Scene choreography. Each scene renders from absolute time t and its cue times (S.cue).
 'use strict';
 
-const SCENES = {};
-
-// shared: theory constellation that lives inside the big head (local head coords)
-const HEAD_K = () => once('K_head', () => makeConstellation(7, 17, { cx: -8, cy: -38, rx: 118, ry: 108, minD: 44, extra: 0.4 }));
-const toGlobal = (K, i, hx, hy, hs) => [hx + K.pts[i][0] * hs, hy + K.pts[i][1] * hs];
-const sparkle = (x, y, r, o = {}) => path(`M${x} ${y - r} Q${x + r * 0.18} ${y - r * 0.18} ${x + r} ${y} Q${x + r * 0.18} ${y + r * 0.18} ${x} ${y + r} Q${x - r * 0.18} ${y + r * 0.18} ${x - r} ${y} Q${x - r * 0.18} ${y - r * 0.18} ${x} ${y - r} Z`, { fill: o.fill ?? C.gold, o: o.o });
+// Shared helpers (HEAD_K, toGlobal, sparkle, compilerMachine, mixColor) live in video/shapes.js and video/engine.js.
 
 // ================================================================== TITLE
 SCENES.title = {
@@ -313,37 +308,6 @@ SCENES.ryle = {
 };
 
 // ================================================================== COMPILER (Naur's case 1) + program death
-function compilerMachine(t, o = {}) {
-  const { patch = 0, decay = 0, patchT = 0 } = o;
-  const col = (c) => (decay > 0 ? mixColor(c, '#A9ADB3', decay) : c);
-  const out = [shadowCard(-260, -150, 520, 300, { rx: 20, stroke: col(C.teal), sw: 4 })];
-  out.push(T('compiler for L', -232, -112, { font: 'mono', size: 20, weight: 600, fill: col(C.tealDark) }));
-  const blocks = [['scan', -170], ['parse', 0], ['emit', 170]];
-  blocks.forEach(([name, bx], i) => {
-    const jy = decay * Math.sin(i * 2.3) * 10;
-    out.push(rect(bx - 62, -40 + jy, 124, 96, { rx: 14, fill: col([C.teal, C.blue, C.plum][i]) }));
-    out.push(G({ x: bx, y: 30 + jy, s: 0.32 }, path(gearPath(40, 10), { fill: 'rgba(255,255,255,0.55)' }), circle(0, 0, 13, { fill: col([C.teal, C.blue, C.plum][i]) })));
-    out.push(T(name, bx, -8 + jy, { font: 'mono', size: 22, weight: 600, fill: C.card, anchor: 'middle' }));
-    if (i < 2) out.push(path(`M${bx + 66} ${8 + jy} L${bx + 104} ${8 + Math.sin((i + 1) * 2.3) * 10 * decay}`, { stroke: col(C.ink2), sw: 5 }), path(`M${bx + 96} ${0} L${bx + 106} ${8} L${bx + 96} ${16}`, { stroke: col(C.ink2), sw: 5 }));
-  });
-  // gears spinning inside blocks
-  const patches = [
-    { x: -40, y: -186, w: 120, h: 64, c: C.mustard, r: -10 }, { x: 200, y: 60, w: 130, h: 80, c: C.coralLight, r: 11 },
-    { x: 110, y: -168, w: 140, h: 58, c: C.plumLight, r: 6 }, { x: -120, y: 110, w: 160, h: 70, c: C.grey, r: -7 },
-    { x: 250, y: -110, w: 90, h: 110, c: C.mustard, r: 18 }, { x: -300, y: 40, w: 100, h: 90, c: C.olive, r: -20 },
-  ];
-  patches.forEach((pp, i) => {
-    const p = P(t, patchT + i * 0.22, 0.4, 'outBack');
-    if (p <= 0 || patch <= 0) return;
-    out.push(G({ x: pp.x + pp.w / 2, y: pp.y + pp.h / 2, r: pp.r, s: p }, rect(-pp.w / 2, -pp.h / 2, pp.w, pp.h, { rx: 6, fill: pp.c, stroke: 'rgba(30,42,58,0.25)', sw: 2 }),
-      G({ x: -pp.w / 2 + 10, y: -pp.h / 2 + 6, r: -35 }, tapeStrip(54)), G({ x: pp.w / 2 - 10, y: pp.h / 2 - 6, r: -35 }, tapeStrip(54))));
-  });
-  return out.join('');
-}
-function mixColor(a, b, p) {
-  const pa = [1, 3, 5].map(i => parseInt(a.slice(i, i + 2), 16)), pb = [1, 3, 5].map(i => parseInt(b.slice(i, i + 2), 16));
-  return '#' + pa.map((v, i) => Math.round(lerp(v, pb[i], clamp(p))).toString(16).padStart(2, '0')).join('');
-}
 SCENES.compiler = {
   render(t, S) {
     const inh = S.cue('inherit'), docs = S.cue('docs'), patch = S.cue('patch'), nt = S.cue('notravel');

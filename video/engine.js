@@ -3,6 +3,7 @@
 'use strict';
 
 const W = 1920, H = 1080;
+const SCENES = {};   // scene files register themselves here: SCENES.<id> = { render(t, S), sfx(S) }
 
 const C = {
   paper: '#F3EDE2', paper2: '#E9E0D0', paper3: '#DDD2BF', card: '#FFFDF8',
@@ -190,3 +191,8 @@ function pulse(t, tp, d = 0.5, amt = 0.08) {
   return 1 + amt * Math.sin(Math.PI * p);
 }
 const wobble = (t, f = 0.5, a = 1, ph = 0) => a * Math.sin(2 * Math.PI * f * t + ph);
+// linear blend of two #rrggbb colours (for fades to grey, decay, warming up)
+function mixColor(a, b, p) {
+  const pa = [1, 3, 5].map(i => parseInt(a.slice(i, i + 2), 16)), pb = [1, 3, 5].map(i => parseInt(b.slice(i, i + 2), 16));
+  return '#' + pa.map((v, i) => Math.round(lerp(v, pb[i], clamp(p))).toString(16).padStart(2, '0')).join('');
+}

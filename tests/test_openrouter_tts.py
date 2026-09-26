@@ -14,6 +14,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, "pipeline"))
+os.environ.setdefault("VIDEO", "specs-as-theory-building")  # any video: the test never writes to it
 
 seen = []
 with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as f:

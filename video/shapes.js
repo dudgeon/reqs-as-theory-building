@@ -119,9 +119,9 @@ function makeConstellation(seed, n, shape) {
   const rank = new Array(pts.length); order.forEach((idx, k) => (rank[idx] = k));
   return { pts, edges, rank };
 }
-// draws the constellation revealed between t0 and t0+dur
+// draws the constellation revealed between t0 and t0+dur; ghost: dashed edges and hollow nodes (a lost or partial theory)
 function constellation(t, K, o = {}) {
-  const { t0 = 0, dur = 1.5, color = C.gold, lineColor = C.goldLight, size = 6, lineW = 2.2, glow = 1, o: op = 1, twinkle = 1, lineO = 0.75, dim = 0 } = o;
+  const { t0 = 0, dur = 1.5, color = C.gold, lineColor = C.goldLight, size = 6, lineW = 2.2, glow = 1, o: op = 1, twinkle = 1, lineO = 0.75, dim = 0, ghost = false } = o;
   const n = K.pts.length;
   const appear = i => t0 + dur * (K.rank[i] / Math.max(1, n - 1));
   const out = [];
@@ -130,7 +130,7 @@ function constellation(t, K, o = {}) {
     const p = P(t, ts, 0.4, 'inOut');
     if (p <= 0) continue;
     const [x1, y1] = K.pts[a], [x2, y2] = K.pts[b];
-    out.push(line(x1, y1, lerp(x1, x2, p), lerp(y1, y2, p), { stroke: lineColor, sw: lineW, o: lineO * (1 - dim * 0.6) }));
+    out.push(line(x1, y1, lerp(x1, x2, p), lerp(y1, y2, p), { stroke: lineColor, sw: lineW, o: lineO * (1 - dim * 0.6), dash: ghost ? '6 8' : undefined }));
   }
   for (let i = 0; i < n; i++) {
     const [x, y, sz, ph] = K.pts[i];
@@ -138,6 +138,7 @@ function constellation(t, K, o = {}) {
     if (p <= 0) continue;
     const tw = 1 + 0.18 * twinkle * Math.sin(t * 2.6 + ph);
     const r = size * sz * p * tw;
+    if (ghost) { out.push(circle(x, y, r, { stroke: color, sw: 2, o: 1 - dim * 0.5 })); continue; }
     if (glow > 0) out.push(circle(x, y, r * 4.2, { fill: 'url(#gGlow)', o: glow * 0.8 * (1 - dim) }));
     out.push(circle(x, y, r, { fill: color, o: 1 - dim * 0.5 }));
     out.push(circle(x - r * 0.25, y - r * 0.25, r * 0.35, { fill: '#FFF6DE', o: 0.8 * (1 - dim) }));
@@ -445,4 +446,175 @@ function handArrow(x1, y1, x2, y2, p, o = {}) {
 function underline(x, y, w, p, o = {}) {
   const d = `M${x} ${y} C${x + w * 0.3} ${y + 5} ${x + w * 0.6} ${y - 4} ${x + w} ${y + 2}`;
   return drawPath(d, p, { stroke: o.color ?? C.gold, sw: o.sw ?? 7 });
+}
+
+// ------------------------------------------------------------------ shared scene helpers
+// the theory constellation that lives inside bigHead (head-local coordinates)
+const HEAD_K = () => once('K_head', () => makeConstellation(7, 17, { cx: -8, cy: -38, rx: 118, ry: 108, minD: 44, extra: 0.4 }));
+// a node of constellation K, in page coordinates, for a head drawn at (hx, hy) scale hs
+const toGlobal = (K, i, hx, hy, hs) => [hx + K.pts[i][0] * hs, hy + K.pts[i][1] * hs];
+// four-point star
+const sparkle = (x, y, r, o = {}) => path(`M${x} ${y - r} Q${x + r * 0.18} ${y - r * 0.18} ${x + r} ${y} Q${x + r * 0.18} ${y + r * 0.18} ${x} ${y + r} Q${x - r * 0.18} ${y + r * 0.18} ${x - r} ${y} Q${x - r * 0.18} ${y - r * 0.18} ${x} ${y - r} Z`, { fill: o.fill ?? C.gold, o: o.o });
+// Naur's compiler: three clean blocks in a frame; `patch` adds taped-on patches from patchT, `decay` greys it out
+function compilerMachine(t, o = {}) {
+  const { patch = 0, decay = 0, patchT = 0 } = o;
+  const col = (c) => (decay > 0 ? mixColor(c, '#A9ADB3', decay) : c);
+  const out = [shadowCard(-260, -150, 520, 300, { rx: 20, stroke: col(C.teal), sw: 4 })];
+  out.push(T('compiler for L', -232, -112, { font: 'mono', size: 20, weight: 600, fill: col(C.tealDark) }));
+  const blocks = [['scan', -170], ['parse', 0], ['emit', 170]];
+  blocks.forEach(([name, bx], i) => {
+    const jy = decay * Math.sin(i * 2.3) * 10;
+    out.push(rect(bx - 62, -40 + jy, 124, 96, { rx: 14, fill: col([C.teal, C.blue, C.plum][i]) }));
+    out.push(G({ x: bx, y: 30 + jy, s: 0.32 }, path(gearPath(40, 10), { fill: 'rgba(255,255,255,0.55)' }), circle(0, 0, 13, { fill: col([C.teal, C.blue, C.plum][i]) })));
+    out.push(T(name, bx, -8 + jy, { font: 'mono', size: 22, weight: 600, fill: C.card, anchor: 'middle' }));
+    if (i < 2) out.push(path(`M${bx + 66} ${8 + jy} L${bx + 104} ${8 + Math.sin((i + 1) * 2.3) * 10 * decay}`, { stroke: col(C.ink2), sw: 5 }), path(`M${bx + 96} ${0} L${bx + 106} ${8} L${bx + 96} ${16}`, { stroke: col(C.ink2), sw: 5 }));
+  });
+  // gears spinning inside blocks
+  const patches = [
+    { x: -40, y: -186, w: 120, h: 64, c: C.mustard, r: -10 }, { x: 200, y: 60, w: 130, h: 80, c: C.coralLight, r: 11 },
+    { x: 110, y: -168, w: 140, h: 58, c: C.plumLight, r: 6 }, { x: -120, y: 110, w: 160, h: 70, c: C.grey, r: -7 },
+    { x: 250, y: -110, w: 90, h: 110, c: C.mustard, r: 18 }, { x: -300, y: 40, w: 100, h: 90, c: C.olive, r: -20 },
+  ];
+  patches.forEach((pp, i) => {
+    const p = P(t, patchT + i * 0.22, 0.4, 'outBack');
+    if (p <= 0 || patch <= 0) return;
+    out.push(G({ x: pp.x + pp.w / 2, y: pp.y + pp.h / 2, r: pp.r, s: p }, rect(-pp.w / 2, -pp.h / 2, pp.w, pp.h, { rx: 6, fill: pp.c, stroke: 'rgba(30,42,58,0.25)', sw: 2 }),
+      G({ x: -pp.w / 2 + 10, y: -pp.h / 2 + 6, r: -35 }, tapeStrip(54)), G({ x: pp.w / 2 - 10, y: pp.h / 2 - 6, r: -35 }, tapeStrip(54))));
+  });
+  return out.join('');
+}
+
+// ------------------------------------------------------------------ helpers added for the extended cut
+// K with jittered nodes, some links dropped and a few wrong ones added: a reconstructed theory that differs.
+// Cache the result with once().
+function perturbConstellation(K, seed, amt = 30, o = {}) {
+  const R = rng(seed);
+  const pts = K.pts.map(p => [p[0] + (R() * 2 - 1) * amt, p[1] + (R() * 2 - 1) * amt, p[2], p[3]]);
+  const edges = K.edges.filter(() => R() > (o.drop ?? 0.3));
+  const add = Math.round(K.pts.length * (o.add ?? 0.15));
+  for (let k = 0; k < add; k++) {
+    const a = Math.floor(R() * pts.length), b = Math.floor(R() * pts.length);
+    if (a !== b) edges.push([a, b]);
+  }
+  return { pts, edges, rank: K.rank };
+}
+// A theory in someone's head: a night-sky thought bubble with a small constellation. Centred.
+// Pass K for a specific theory, or seed/n for a generated one; t0/dur reveal it; ghost draws it dashed.
+function theoryBubble(t, o = {}) {
+  const { w = 230, h = 160, seed = 3, n = 9, t0 = -99, dur = 0.9, tailX = -w * 0.28, glow = 1, ghost = false, K = null, dim = 0, color, lineColor } = o;
+  const Kb = K || once(`K_tb_${seed}_${n}_${w}_${h}`, () => makeConstellation(seed, n, { rx: w * 0.36, ry: h * 0.3, minD: Math.min(w, h) * 0.17, extra: 0.3 }));
+  return thoughtBubble(w, h, { fill: C.night, stroke: 'rgba(30,42,58,0.35)', tailX }) +
+    constellation(t, Kb, { t0, dur, size: 4.2, lineW: 1.8, glow: 0.8 * glow, ghost, dim, color, lineColor });
+}
+// A person who holds a theory: person() plus a theoryBubble above the head. Feet at (0,0).
+// bubble: 0…1 grow-in; theory: options for theoryBubble; bubbleSide: 1 (right) or -1 (left).
+function holder(t, o = {}) {
+  const { bubble = 1, theory = {}, bubbleSide = 1, ...rest } = o;
+  const bp = clamp(bubble);
+  const b = bp > 0 ? G({ x: 96 * bubbleSide, y: -420, s: 0.35 + 0.65 * Ease.outBack(bp), o: clamp(bp * 2) },
+    theoryBubble(t, { tailX: -64 * bubbleSide, ...theory })) : '';
+  return person(t, rest) + b;
+}
+// Verification seal: scalloped rosette with a tick, centred. p: 0…1 stamps it in.
+function seal(p = 1, o = {}) {
+  if (p <= 0) return '';
+  const r = o.r ?? 34, c = o.color ?? C.teal, k = 16, pts = [];
+  for (let i = 0; i < k * 2; i++) {
+    const a = (i / (k * 2)) * Math.PI * 2, rr = i % 2 ? r * 0.88 : r;
+    pts.push([Math.cos(a) * rr, Math.sin(a) * rr]);
+  }
+  return G({ s: lerp(1.7, 1, Ease.outBack(clamp(p))), r: o.rot ?? -8, o: clamp(p * 3) },
+    path(smooth(pts, true), { fill: c }),
+    circle(0, 0, r * 0.68, { stroke: 'rgba(255,255,255,0.75)', sw: Math.max(1.5, r * 0.06) }),
+    G({ s: r / 40 }, drawPath('M-14 1 L-4 11 L15 -10', clamp(p * 1.5 - 0.3), { stroke: C.card, sw: 7 })));
+}
+// Rubber stamp: bordered caps text that slams in (p 0…1). Centred.
+function stamp(text, p = 1, o = {}) {
+  if (p <= 0) return '';
+  const size = o.size ?? 34, c = o.color ?? C.coral, ls = size * 0.12;
+  const w = measure(text, size, 'sans', 800) + ls * text.length + 48, h = size * 1.75, q = clamp(p);
+  return G({ r: o.rot ?? -7, s: lerp(1.8, 1, Ease.out(q)), o: clamp(q * 2.5) * (o.o ?? 0.92) },
+    rect(-w / 2, -h / 2, w, h, { rx: 10, stroke: c, sw: 5 }),
+    rect(-w / 2 + 8, -h / 2 + 8, w - 16, h - 16, { rx: 6, stroke: c, sw: 1.5 }),
+    T(text, ls / 2, size * 0.36, { size, weight: 800, fill: c, anchor: 'middle', ls }));
+}
+// Hardcover book, front view, centred. title: string or [lines].
+function book(o = {}) {
+  const w = o.w ?? 150, h = o.h ?? 200, c = o.color ?? C.blue;
+  const lines = o.title == null ? [] : Array.isArray(o.title) ? o.title : [o.title];
+  const widest = Math.max(1, ...lines.map(l => measure(l, 100, 'sans', 800) + 100 * 0.01 * l.length));
+  const size = o.size ?? Math.min(Math.round(w * 0.13), Math.floor(100 * (w - 76) / widest));
+  return [
+    rect(-w / 2 + 4, -h / 2 + 8, w, h, { rx: 8, fill: 'rgba(30,42,58,0.14)' }),
+    rect(-w / 2 + 6, -h / 2 + 4, w - 4, h - 4, { rx: 6, fill: C.card, stroke: C.faint, sw: 2 }),
+    rect(-w / 2, -h / 2, w - 8, h - 6, { rx: 8, fill: c }),
+    rect(-w / 2, -h / 2, 14, h - 6, { rx: 6, fill: 'rgba(0,0,0,0.18)' }),
+    rect(-w / 2 + 24, -h / 2 + 20, w - 52, h * 0.38, { rx: 5, fill: 'rgba(255,255,255,0.14)', stroke: 'rgba(255,255,255,0.45)', sw: 1.5 }),
+    ...lines.map((l, i) => T(l, 3, -h / 2 + 20 + h * 0.19 + (i - (lines.length - 1) / 2) * size * 1.15 + size * 0.35,
+      { size, weight: 800, fill: C.card, anchor: 'middle', ls: 1 })),
+  ].join('');
+}
+// Wall clock, centred. The minute hand turns `speed` times per second (fast = time passing).
+function clock(t, o = {}) {
+  const r = o.r ?? 40, c = o.color ?? C.ink, am = t * (o.speed ?? 0.5) * 360;
+  return [circle(0, 0, r, { fill: C.card, stroke: c, sw: r * 0.12 }),
+    ...Array.from({ length: 12 }, (_, i) => {
+      const a = i * Math.PI / 6;
+      return line(Math.cos(a) * r * 0.7, Math.sin(a) * r * 0.7, Math.cos(a) * r * 0.8, Math.sin(a) * r * 0.8, { stroke: c, sw: r * 0.05 });
+    }),
+    G({ r: am / 12 }, line(0, 0, 0, -r * 0.45, { stroke: c, sw: r * 0.1 })),
+    G({ r: am }, line(0, 0, 0, -r * 0.68, { stroke: c, sw: r * 0.07 })),
+    circle(0, 0, r * 0.08, { fill: c })].join('');
+}
+// A governed fact (or, with status null, a decision), centred. rows: [[LABEL, value], …].
+// status 'verified' (teal bar, VERIFIED pill, seal) or 'assumed' (dashed mustard border, ASSUMED pill).
+// reveal 0…1 brings in the claim, then each row; sealP 0…1 stamps the seal on a verified card.
+function factCard(o = {}) {
+  const { w = 620, claim = 'A governed fact', rows = [], status = 'verified', kind = 'GOVERNED FACT', reveal = 1, sealP = 0 } = o;
+  const claimLines = Array.isArray(claim) ? claim : [claim];
+  const lh = 42, rowH = 40;
+  const h = o.h ?? 96 + claimLines.length * lh + 20 + rows.length * rowH;
+  const x = -w / 2, y = -h / 2, assumed = status === 'assumed';
+  const accent = o.accent ?? (assumed ? C.mustard : status === 'verified' ? C.teal : C.goldDeep);
+  const k = clamp(reveal) * (1 + rows.length);
+  const out = [
+    rect(x + 3, y + 9, w, h, { rx: 18, fill: 'rgba(30,42,58,0.10)' }),
+    rect(x, y, w, h, { rx: 18, fill: assumed ? C.paper : C.card, stroke: assumed ? C.mustard : 'rgba(30,42,58,0.12)', sw: assumed ? 3.5 : 2, dash: assumed ? '14 10' : undefined }),
+    rect(x + 16, y + 20, 8, h - 40, { rx: 4, fill: accent }),
+    T(kind, x + 44, y + 46, { size: 16, weight: 800, fill: C.ink3, ls: 3 }),
+  ];
+  if (status) {
+    const lab = assumed ? 'ASSUMED' : 'VERIFIED', pw = measure(lab, 16, 'sans', 800) + 16 * 2 + 30;
+    out.push(G({ x: x + w - 28 - pw, y: y + 26 }, rect(0, 0, pw, 32, { rx: 16, fill: assumed ? 'none' : accent, stroke: assumed ? accent : undefined, sw: 2.5, dash: assumed ? '6 5' : undefined }),
+      T(lab, pw / 2 + 2, 22, { size: 16, weight: 800, fill: assumed ? C.ink2 : C.card, anchor: 'middle', ls: 2 })));
+  }
+  claimLines.forEach((l, i) => out.push(T(l, x + 44, y + 96 + i * lh, { font: 'serif', size: 32, weight: 600, fill: C.ink, o: clamp(k) })));
+  const dy = y + 96 + (claimLines.length - 1) * lh + 26;
+  out.push(line(x + 44, dy, x + w - 28, dy, { stroke: C.faint, sw: 2, o: clamp(k) }));
+  rows.forEach(([lab, val], i) => {
+    const rp = clamp(k - 1 - i);
+    if (rp <= 0) return;
+    const ry = dy + 36 + i * rowH;
+    out.push(T(lab, x + 44, ry, { size: 15, weight: 800, fill: C.ink3, ls: 2, o: rp }),
+      T(val, x + 168 + (1 - rp) * 14, ry + 1, { size: 23, weight: 500, fill: C.ink, o: rp }));
+  });
+  if (status === 'verified' && sealP > 0) out.push(G({ x: x + w - 66, y: y + h - 58 }, seal(sealP, { r: 38 })));
+  return out.join('');
+}
+// A small fact card for ledgers and flows (about 150x96), centred. status as in factCard.
+function factChip(o = {}) {
+  const w = o.w ?? 150, h = o.h ?? 96, status = o.status ?? 'verified', assumed = status === 'assumed';
+  const accent = o.accent ?? (assumed ? C.mustard : status === 'verified' ? C.teal : C.goldDeep);
+  const x = -w / 2, y = -h / 2;
+  return [
+    rect(x + 2, y + 6, w, h, { rx: 10, fill: 'rgba(30,42,58,0.10)' }),
+    rect(x, y, w, h, { rx: 10, fill: assumed ? C.paper : C.card, stroke: assumed ? C.mustard : 'rgba(30,42,58,0.14)', sw: assumed ? 2.5 : 1.5, dash: assumed ? '7 6' : undefined }),
+    rect(x + 10, y + 12, 5, h - 24, { rx: 2.5, fill: accent }),
+    rect(x + 26, y + 16, w * 0.62, 9, { rx: 4.5, fill: C.ink, o: 0.75 }),
+    rect(x + 26, y + 33, w * 0.48, 9, { rx: 4.5, fill: C.ink, o: 0.75 }),
+    rect(x + 26, y + h - 38, w * 0.4, 6, { rx: 3, fill: C.ink3, o: 0.8 }),
+    rect(x + 26, y + h - 24, w * 0.3, 6, { rx: 3, fill: C.ink3, o: 0.8 }),
+    status === 'verified' ? G({ x: x + w - 26, y: y + h - 26 }, seal(o.sealP ?? 1, { r: 15, rot: 0 })) : '',
+    assumed ? T('?', x + w - 24, y + h - 12, { font: 'serif', size: 30, weight: 700, fill: C.goldDeep, anchor: 'middle' }) : '',
+  ].join('');
 }

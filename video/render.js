@@ -1,8 +1,9 @@
 #!/usr/bin/env node
-// Headless frame renderer.
-//   node video/render.js --stills 3.2,9.8      -> build/stills/*.jpg (for review)
-//   node video/render.js --frames              -> build/frames/f_00000.jpg ... (full video)
-//   node video/render.js --sfx                 -> build/sfx.json (sound-effect cue list)
+// Headless frame renderer. Pick the video with VIDEO=<folder in videos/> (or --video <name>).
+//   node video/render.js --stills 3.2,9.8      -> build/<video>/stills/*.jpg (for review)
+//   node video/render.js --frames              -> build/<video>/frames/f_00000.jpg ... (full video)
+//   node video/render.js --sfx                 -> build/<video>/sfx.json (sound-effect cue list)
+// LENIENT=1 logs and skips scenes that throw instead of failing (use while scenes are unfinished).
 'use strict';
 const fs = require('fs');
 const path = require('path');
@@ -15,9 +16,15 @@ try { playwright = require('playwright'); } catch (e) {
 }
 
 const ROOT = path.resolve(__dirname, '..');
-const BUILD = path.join(ROOT, 'build');
 const args = process.argv.slice(2);
 const opt = (name, dflt) => { const i = args.indexOf(name); return i < 0 ? dflt : (args[i + 1] && !args[i + 1].startsWith('--') ? args[i + 1] : true); };
+const VIDEOS = fs.readdirSync(path.join(ROOT, 'videos')).filter(d => fs.existsSync(path.join(ROOT, 'videos', d, 'narration.json'))).sort();
+const VIDEO = opt('--video') || process.env.VIDEO || (VIDEOS.length === 1 ? VIDEOS[0] : null);
+if (!VIDEOS.includes(VIDEO)) { console.error(`Set VIDEO to one of: ${VIDEOS.join(', ')}`); process.exit(2); }
+const BUILD = path.join(ROOT, 'build', VIDEO);
+// LENIENT=1: log a failing scene and keep going (for reviewing while other scenes are unfinished)
+const LENIENT = !!process.env.LENIENT;
+fs.mkdirSync(BUILD, { recursive: true });
 
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.woff2': 'font/woff2', '.jpg': 'image/jpeg', '.png': 'image/png', '.wav': 'audio/wav', '.json': 'application/json' };
 function serve() {
@@ -34,10 +41,10 @@ function serve() {
 
 async function openPage(browser, port) {
   const page = await browser.newPage({ viewport: { width: 1920, height: 1080 }, deviceScaleFactor: 1 });
-  page.on('pageerror', e => { console.error('page error:', e.message); process.exitCode = 1; });
+  page.on('pageerror', e => { console.error('page error:', e.message); if (!LENIENT) process.exitCode = 1; });
   page.on('console', m => { if (m.type() === 'error') console.error('console:', m.text()); });
-  await page.goto(`http://127.0.0.1:${port}/video/index.html?render=1`);
-  await page.evaluate(() => window.ready);
+  await page.goto(`http://127.0.0.1:${port}/video/index.html?render=1&video=${encodeURIComponent(VIDEO)}${LENIENT ? '&lenient=1' : ''}`);
+  await page.evaluate(() => window.videoLoaded.then(() => window.ready));
   return page;
 }
 

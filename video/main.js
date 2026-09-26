@@ -16,6 +16,9 @@ function sceneCtx(b) {
   };
 }
 const CTX = TL.scenes.map(sceneCtx);
+// ?lenient=1 (LENIENT=1 for render.js / review.py): a scene that throws is logged and skipped, so scenes can be
+// reviewed while their neighbours are still being written. Full renders stay strict.
+const LENIENT = new URLSearchParams(location.search).has('lenient');
 
 function renderFrame(t) {
   const parts = [];
@@ -25,11 +28,31 @@ function renderFrame(t) {
     if (t < S.start - (sc.pre ?? 0.05) || t > S.end + (sc.post ?? 0.6)) continue;
     const p = clamp((t - S.start) / Math.max(0.1, S.end - S.start));
     const z = 1 + (sc.zoom ?? 0.02) * Ease.inOutSine(p);
-    const svg = sc.render(t, S);
+    let svg;
+    try { svg = sc.render(t, S); } catch (e) {
+      if (!LENIENT) throw e;
+      console.error(`scene ${S.id} failed at t=${t.toFixed(2)}: ${e.message}`);
+      continue;
+    }
     if (!svg) continue;
     parts.push(`<g transform="translate(960 540) scale(${z.toFixed(5)}) translate(-960 -540)">${svg}</g>`);
   }
+  for (const c of TL.chapters || []) parts.push(chapterChip(t, c));
   root.innerHTML = parts.join('');
+}
+
+// Chapter label, top-left, for the first seconds of each chapter (long videos only).
+// It lives in the band above the headlines (y < 95), outside the camera push.
+function chapterChip(t, c) {
+  const a = c.start + 0.3, b = c.start + 4.8;
+  if (t < a || t > b + 0.1) return '';
+  const e = P(t, a, 0.5, 'out'), x = 1 - P(t, b - 0.6, 0.6, 'inOut');
+  const o = Math.min(e, x);
+  return G({ x: 96 - 18 * (1 - e), y: 62, o }, [
+    circle(0, 0, 17, { fill: C.goldDeep }),
+    T(String(c.n), 0, 6, { size: 17, weight: 800, fill: C.card, anchor: 'middle' }),
+    T(c.title, 30, 8, { size: 24, weight: 600, fill: C.ink2, ls: 0.5 }),
+  ]);
 }
 
 function collectSfx() {
@@ -72,7 +95,7 @@ if (!params.has('render')) {
   };
   window.addEventListener('resize', fit);
   let audio = null;
-  try { audio = new Audio('../build/mix.wav'); } catch (e) { audio = null; }
+  try { audio = new Audio('../build/' + encodeURIComponent(params.get('video')) + '/mix.wav'); } catch (e) { audio = null; }
   let playing = false, t0 = 0, base = 0;
   const show = t => { renderFrame(t); scrub.value = t; clock.textContent = `${t.toFixed(2)}s`; };
   const tick = () => {

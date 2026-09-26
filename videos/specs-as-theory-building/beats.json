@@ -1,0 +1,116 @@
+[
+ {
+  "scene": "title",
+  "at": "start",
+  "offset": 1.25,
+  "caption": "Naur's title is struck out: *Programming* becomes **Specs**."
+ },
+ {
+  "scene": "title",
+  "at": "start",
+  "offset": 3.0,
+  "caption": "Title card: *Specs as Theory Building*, Naur's big idea for the age of coding agents."
+ },
+ {
+  "scene": "hook",
+  "at": "q",
+  "offset": 0.8,
+  "caption": "\"What does a software team *actually* produce?\" A team at laptops builds a tall stack of printouts. *The product?*"
+ },
+ {
+  "scene": "hook",
+  "at": "notcode",
+  "offset": 0.9,
+  "caption": "Naur's 1985 paper answers: **not the code.** The stack is crossed out and sparks appear over the team's heads."
+ },
+ {
+  "scene": "thesis",
+  "at": "prog",
+  "offset": 0.8,
+  "caption": "Programming is theory building. THE WORLD (institutions, rules, people, processes) is mapped through a theory, drawn as a constellation in the head, to THE PROGRAM."
+ },
+ {
+  "scene": "thesis",
+  "at": "specs",
+  "offset": 1.0,
+  "caption": "Code, docs and even the SPEC drop onto a shelf of *secondary products*. *Primary: the theory.*"
+ },
+ {
+  "scene": "ryle",
+  "at": "explain",
+  "offset": 0.9,
+  "caption": "Theory in Gilbert Ryle's sense. *Knowing that* is a card of facts. *Knowing how* is doing it (casting a line) and being able to explain why."
+ },
+ {
+  "scene": "ryle",
+  "at": "adapt",
+  "offset": 1.3,
+  "caption": "Whoever holds the theory can **Map** the world to the program, **Justify** each part, and **Adapt**: judge which changes fit."
+ },
+ {
+  "scene": "compiler",
+  "at": "patch",
+  "offset": 1.6,
+  "caption": "Naur's case: Team B inherits a compiler with full code and docs, yet proposes taped-on patches that would break its design. Later maintainers, without Team A, did break it."
+ },
+ {
+  "scene": "compiler",
+  "at": "notravel",
+  "offset": 0.45,
+  "caption": "The theory tries to travel to Team B and can't: **code + docs ≠ theory.**"
+ },
+ {
+  "scene": "compiler",
+  "at": "runs",
+  "offset": 1.0,
+  "caption": "Team A leaves and the monitor flatlines: *program death*. The program still runs, but nobody can change it intelligently."
+ },
+ {
+  "scene": "agents",
+  "at": "free",
+  "offset": 0.9,
+  "caption": "Now agents write the code. Text is nearly free: **$0.00**."
+ },
+ {
+  "scene": "agents",
+  "at": "theory",
+  "offset": 0.7,
+  "caption": "For Naur, text was never the expensive part. The scale tips toward THEORY."
+ },
+ {
+  "scene": "agents",
+  "at": "keep",
+  "offset": 1.0,
+  "caption": "Specifying builds the theory. The agent **gets the spec** and **you keep the theory**."
+ },
+ {
+  "scene": "enterprise",
+  "at": "unsaid",
+  "offset": 1.3,
+  "caption": "A regulated enterprise: the theory is scattered across a rule buried in policy, a platform quirk one engineer knows, and a constraint nobody says out loud."
+ },
+ {
+  "scene": "enterprise",
+  "at": "rgtb",
+  "offset": 1.9,
+  "caption": "Requirements gathering *is* theory building. The fragments come together in one head."
+ },
+ {
+  "scene": "takeaways",
+  "at": "loop",
+  "offset": 1.2,
+  "caption": "Four habits: trace to source (map), write down the why (justify), rehearse change (adapt), and stay close to the theory-holders (keep it alive)."
+ },
+ {
+  "scene": "close",
+  "at": "c3",
+  "offset": 1.1,
+  "caption": "Code is the output. The spec is the handoff. **The theory is the product.**"
+ },
+ {
+  "scene": "end",
+  "at": "start",
+  "offset": 1.6,
+  "caption": "End card with the citation and voice credit."
+ }
+]

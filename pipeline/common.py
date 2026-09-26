@@ -1,14 +1,34 @@
 """Shared helpers for the narration pipeline."""
 import json
+import os
 import pathlib
 import re
 import subprocess
+import sys
 
 import numpy as np
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-NARRATION = ROOT / "pipeline" / "narration.json"
-BUILD = ROOT / "build"
+VIDEOS = ROOT / "videos"
+
+
+def _video():
+    """Which video to build: $VIDEO (a folder in videos/), or the only one there is."""
+    name = os.environ.get("VIDEO")
+    names = sorted(p.name for p in VIDEOS.iterdir() if (p / "narration.json").exists())
+    if name:
+        if name not in names:
+            sys.exit(f"VIDEO={name} not found; choose one of: {', '.join(names)}")
+        return name
+    if len(names) == 1:
+        return names[0]
+    sys.exit(f"Set VIDEO to one of: {', '.join(names)}   e.g. VIDEO={names[0]} ./build.sh")
+
+
+VIDEO = _video()
+PROJECT = VIDEOS / VIDEO               # per-video sources: narration.json, scenes, beats.json, page.html, script.md
+NARRATION = PROJECT / "narration.json"
+BUILD = ROOT / "build" / VIDEO         # per-video intermediates (gitignored)
 SR = 48000  # working sample rate for everything audio
 
 CUE_RE = re.compile(r"\{(\w+)\}")
@@ -19,8 +39,8 @@ def load_narration():
 
 
 def slug(narr):
-    """Output file stem, e.g. out/<slug>.mp4. Set "slug" in narration.json; defaults to the title."""
-    return narr.get("slug") or re.sub(r"[^a-z0-9]+", "-", narr["title"].lower()).strip("-")
+    """Output file stem, e.g. out/<slug>.mp4. Set "slug" in narration.json; defaults to the video folder name."""
+    return narr.get("slug") or VIDEO
 
 
 def clean_text(text):
