@@ -535,7 +535,7 @@ SCENES.monitor = {
     out.push(G({ o: eH.o, y: eH.y }, secLabel('CASE 2 · A REAL-TIME MONITORING SYSTEM', 960, 134)));
 
     // ---- the control-room wall: big and centred while it powers on, then up to make room for the people
-    const eW = enter(t, S.start + 0.1, { dy: 20, d: 0.6 });
+    const eW = enter(t, S.start + 0.02, { dy: 20, d: 0.6 });
     const up = P(t, c.vet - 0.75, 0.85, 'inOut');
     const st = MON_PANELS.map((_, i) => ({ on: P(t, c.sys - 0.3 + i * 0.08, 0.25), fault: 0, fixed: 0 }));
     st[2].fault = P(t, c.f1, 0.25); st[2].fixed = P(t, c.x1, 0.35); st[2].fade = P(t, c.x1 + 1.6, 0.4);
