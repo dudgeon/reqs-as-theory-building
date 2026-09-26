@@ -71,7 +71,7 @@ function methodChart(t, st) {
       box.push(G({ y: -24, s: lerp(0.5, 1, Ease.outBack(clamp(lp * 1.6))), o: clamp(lp * 3) }, methodGlyph(i)));
       box.push(typeCentered(M_LAB[i], lp, 0, 78, { size: 36, weight: 700, fill: C.ink }));
     }
-    if (st.badge[i]) box.push(G({ y: -MB.h / 2 }, badge(i + 1, { r: 26, fill: C.blue })));
+    if (st.badge[i]) box.push(G({ y: -MB.h / 2 - 5 * hl }, badge(i + 1, { r: 26, fill: C.blue })));
     out.push(G({ x: bx, y: MB.y, s: lerp(0.6, 1, Ease.outBack(clamp(p))), o: clamp(p * 2) }, box));
   });
   return out.join('');
@@ -81,7 +81,7 @@ function methodTimes(S) {
   const words = [wordAt(S, 0, 'steps', wr + 1.5), wordAt(S, 0, 'order', wr + 2.1), wordAt(S, 0, 'notations', wr + 2.4), wordAt(S, 0, 'documents', wr + 3.1)];
   const l1 = S.line(1) ? S.line(1).start : no - 0.75;          // "But a theory…"
   const though = wordAt(S, 1, 'though', ed - 0.5);
-  return { m0, wr, no, nr, ed, words, l1, though, launch: i => no - 0.5 + i * 0.16, slip: i => no + 0.95 + i * 0.13 };
+  return { m0, wr, no, nr, ed, words, l1, though, launch: i => no - 0.7 + i * 0.16, slip: i => no + 0.95 + i * 0.13 };
 }
 SCENES.method = {
   render(t, S) {
@@ -97,10 +97,10 @@ SCENES.method = {
     const fold = P(t, though - 0.15, 0.45, 'inOut');
     const stampP = P(t, nr - 0.15, 0.35);
     const eC = enter(t, S.start + 0.1, { d: 0.6, dy: 30 });
-    // a pulse runs through the boxes in order once they are all labelled
-    const h0 = words[3] + 0.3, hOff = 1 - P(t, launch(0) - 0.3, 0.3);
-    const hk = (t - h0) * 2.6;
-    const hl = [0, 1, 2, 3].map(i => (t > h0 ? clamp(1 - Math.abs((hk % 5.5) - i - 0.5) * 1.4) * hOff : 0));
+    // a pulse runs through the boxes in order: once while they wait for labels, then again once labelled
+    const run = (a, b) => [0, 1, 2, 3].map(i => (t > a && t < b + 0.6 ? clamp(1 - Math.abs(((t - a) * 2.6 % 5.5) - i - 0.5) * 1.4) * (1 - P(t, b, 0.3)) : 0));
+    const hA = run(m0 + 0.55, wr - 0.25), hB = run(words[3] + 0.3, launch(0) - 0.3);
+    const hl = hA.map((v, i) => Math.max(v, hB[i]));
     const st = {
       boxIn: [0, 1, 2, 3].map(i => P(t, m0 - 0.3 + i * 0.14, 0.5, 'linear')),
       arrow: [0, 1, 2].map(i => P(t, m0 - 0.05 + i * 0.14, 0.35, 'inOut')),
@@ -108,7 +108,8 @@ SCENES.method = {
       hl,
       badge: [0, 1, 2, 3].map(i => t < launch(i)),
     };
-    if (fold < 1) out.push(G({ x: cx, y: cy + eC.y, sx: cs * eC.s * lerp(1, 0.1, fold), sy: cs * eC.s, o: eC.o * (1 - 0.35 * stampP) * (1 - fold) }, methodChart(t, st)));
+    const shake = t > nr - 0.05 ? 8 * Math.exp(-(t - nr + 0.05) * 9) * Math.sin((t - nr) * 55) : 0;   // the stamp's impact
+    if (fold < 1) out.push(G({ x: cx + shake, y: cy + eC.y, sx: cs * eC.s * lerp(1, 0.1, fold), sy: cs * eC.s, o: eC.o * (1 - 0.35 * stampP) * (1 - fold) }, methodChart(t, st)));
     // "a set of work rules", under the chart until it moves aside
     const eW = enter(t, wr - 0.25, { dy: 10 });
     if (eW.o > 0) out.push(G({ o: eW.o * (1 - P(t, l1 - 0.7, 0.35)), y: eW.y }, hand('a set of work rules', 960, 850, { size: 54, fill: C.ink2 }),
@@ -130,9 +131,9 @@ SCENES.method = {
         circle(0, 0, OR * 1.3, { fill: 'url(#gGlow)', o: 0.38 * glowUp }),
         circle(0, 0, OR, { fill: 'url(#gNight)' }),
         circle(0, 0, OR, { stroke: C.goldDeep, sw: 3, o: 0.3 }),
-        G({ r: rot }, constellation(t, Kc, { t0: l1, dur: 0.9, size: 8, lineW: 2.8, glow: glowUp })),
+        G({ r: rot }, constellation(t, Kc, { t0: l1 - 0.05, dur: 0.6, size: 8, lineW: 2.8, glow: glowUp })),
       ]));
-      const eL = enter(t, no + 0.05, { dy: 10 });
+      const eL = enter(t, no - 0.2, { dy: 10 });
       if (eL.o > 0) out.push(G({ o: eL.o * (1 - P(t, nr - 0.4, 0.4)), y: eL.y }, hand('no inherent parts or order', OX, OY + OR + 78, { fill: C.goldDeep, size: 50 })));
     }
     // the number badges fly onto the theory's nodes, and slide off
@@ -157,7 +158,7 @@ SCENES.method = {
     // the chart folds into a textbook, which a student reads
     const bookIn = P(t, though + 0.05, 0.45, 'outBack');
     const toHands = P(t, ed - 0.4, 0.6, 'inOut');
-    const stX = 450, stY = 950, stS = 1.12;
+    const stX = 450, stY = 915, stS = 1.05;
     const eSt = enter(t, though - 0.2, { d: 0.6, dy: 0 });
     if (eSt.o > 0) {
       const walkX = lerp(-120, 0, P(t, though - 0.2, 0.8, 'out'));
@@ -167,12 +168,12 @@ SCENES.method = {
       out.push(G({ x: stX + walkX, y: stY + bob, s: stS, o: eSt.o }, person(t, { shirt: C.olive, skin: C.skin[4], hair: C.hair[2], hairStyle: 1, seed: 31, mood: 'happy', look: q > 0.5 ? 0 : 0.5, arms })));
     }
     if (bookIn > 0) {
-      const bx = lerp(cx, stX, toHands), by = lerp(cy, stY - 108 * stS, toHands);
+      const bx = lerp(cx, stX, toHands), by = lerp(cy, stY - 112 * stS, toHands);
       const bob = toHands >= 1 ? Math.sin((t - ed) * 2.2) * 2 : 0;
-      out.push(G({ x: bx, y: by + bob, s: lerp(0.3, 1, bookIn), r: lerp(-10, -3, toHands), o: clamp(bookIn * 3) }, book({ title: 'METHODS', w: 180, h: 230, color: C.blue, size: 22 })));
+      out.push(G({ x: bx, y: by + bob, s: lerp(0.3, 1, bookIn), r: lerp(-10, -3, toHands), o: clamp(bookIn * 3) }, book({ title: 'METHODS', w: 170, h: 212, color: C.blue, size: 22 })));
     }
     const eE = enter(t, ed - 0.1, { dy: 10 });
-    if (eE.o > 0) out.push(G({ o: eE.o, y: eE.y }, hand('useful as education', 840, 800, { fill: C.tealDark, size: 50 }), G({ x: 840, y: 860 }, tickBadge(P(t, ed + 0.2, 0.5)))));
+    if (eE.o > 0) out.push(G({ o: eE.o, y: eE.y }, hand('useful as education', 820, 770, { fill: C.tealDark, size: 52 }), G({ x: 820, y: 832 }, tickBadge(P(t, ed + 0.2, 0.5)))));
     return G({ o: X.o, y: X.y }, out);
   },
   sfx(S) {
@@ -187,7 +188,7 @@ SCENES.method = {
       { t: slip(0), type: 'fizzle', gain: 0.45 },
       { t: nr - 0.15, type: 'thud', gain: 0.8 },
       { t: though - 0.15, type: 'swish', dur: 0.4, gain: 0.5 }, { t: though - 0.2, type: 'steps', dur: 0.7, gain: 0.35 },
-      { t: ed - 0.4, type: 'whoosh', dur: 0.5, gain: 0.35 }, { t: ed + 0.2, type: 'pluck', note: 7, gain: 0.6 },
+      { t: ed + 0.2, type: 'pluck', note: 7, gain: 0.6 },
     ];
   },
 };
@@ -217,7 +218,7 @@ function statusTimes(S) {
   return {
     cmp, resp, sd,
     wLine: wordAt(S, 0, 'line', cmp + 1.7), wAct: wordAt(S, 0, 'activity', resp + 2.3), wComp: wordAt(S, 0, 'computer', resp + 3.0),
-    wEng: wordAt(S, 0, 'engineers', sd + 0.7), wLaw: wordAt(S, 0, 'lawyers', sd + 1.1),
+    wEng: wordAt(S, 0, 'engineers', sd + 0.7), wLaw: wordAt(S, 0, 'engineers', sd + 0.7) + 0.4,   // the lawyer lands just after the engineer: "lawyers" comes too close to the scene end
     swaps: [cmp - 0.35, cmp + 0.3, cmp + 0.95],
   };
 }
@@ -229,12 +230,12 @@ SCENES.status = {
     const eH = enter(t, S.start + 0.02, { dy: 12 });
     out.push(G({ o: eH.o, y: eH.y }, section('THE PROGRAMMER’S STATUS')));
     // ---- phase A: a production line of identical, swappable figures
-    const pA = exitAt(t, resp - 0.55, 0.4);
+    const pA = exitAt(t, resp - 0.45, 0.4);
     if (pA.o > 0) {
       const A = [];
       const eB = enter(t, S.start + 0.02, { dy: 30, d: 0.6 });
       const run = t - S.start, v = 85, span = 1600, x0 = 160;
-      const beltY = 790;
+      const beltY = 800, fs = 0.76;
       // conveyor: legs, belt, rollers, moving stripes
       [300, 700, 1220, 1620].forEach(lx => A.push(rect(lx - 9, beltY + 26, 18, 96, { rx: 5, fill: C.ink3 })));
       A.push(rect(x0 - 20, beltY, span + 40, 30, { rx: 15, fill: C.ink2 }));
@@ -247,7 +248,7 @@ SCENES.status = {
         A.push(circle(rx, beltY + 15, 11, { fill: C.ink3 }), line(rx - Math.cos(a) * 9, beltY + 15 - Math.sin(a) * 9, rx + Math.cos(a) * 9, beltY + 15 + Math.sin(a) * 9, { stroke: C.ink2, sw: 3 }));
       }
       // identical figures ride the belt; three get swapped out for copies
-      const N = 8, sp = span / N;
+      const N = 7, sp = span / N;
       const posAt = (i, tt) => x0 + ((i * sp + v * (tt - S.start)) % span);
       const swapped = swaps.map((ts, k) => {
         const tx = [620, 1300, 960][k];
@@ -261,19 +262,22 @@ SCENES.status = {
         swapped.forEach((j, k) => {
           if (j !== i || t < swaps[k]) return;
           const ts = swaps[k];
-          const outP = P(t, ts, 0.45, 'in');
-          if (outP < 1) A.push(G({ x: x + 40 * outP, y: beltY - 200 * outP, s: 0.6, r: 28 * outP, o: edge * (1 - outP) }, person(t, STATUS_DRONE)));
-          const inP = P(t, ts + 0.3, 0.5, 'outBack');
-          dy += lerp(-230, 0, inP); fo *= clamp(P(t, ts + 0.3, 0.2) * 1.2);
+          const outP = P(t, ts, 0.5, 'in');
+          if (outP < 1) A.push(G({ x: x + 60 * outP, y: beltY - 260 * outP, s: fs, r: 30 * outP, o: edge * (1 - outP) }, person(t, STATUS_DRONE)));
+          const inP = P(t, ts + 0.35, 0.5, 'outBack');
+          dy += lerp(-300, 0, inP); fo *= clamp(P(t, ts + 0.35, 0.2) * 1.2);
+          // a swap sign over the slot
+          const sg = P(t, ts - 0.1, 0.3, 'outBack') * (1 - P(t, ts + 0.8, 0.3));
+          if (sg > 0) A.push(G({ x: x + 70, y: beltY - 300, s: sg, o: clamp(sg * 2) * edge }, circle(0, 0, 44, { fill: C.card, stroke: C.faint, sw: 2 }), loopArrows(t, { r: 26, color: C.ink2, spin: (t - ts) * 220 })));
         });
-        if (fo > 0) A.push(G({ x, y: beltY + dy, s: 0.6, o: edge * fo }, person(t, STATUS_DRONE)));
+        if (fo > 0) A.push(G({ x, y: beltY + dy, s: fs, o: edge * fo }, person(t, STATUS_DRONE)));
       }
       const eL = enter(t, cmp - 0.15, { dy: 12 });
       if (eL.o > 0) {
-        const lx = 960, ly = 440;
+        const lx = 960, ly = 380;
         const w = measure('replaceable component?', 58, 'hand', 700);
         A.push(G({ o: eL.o, y: eL.y }, hand('replaceable component?', lx, ly, { size: 58, fill: C.ink })));
-        A.push(drawPath(`M${lx - w / 2 - 14} ${ly - 14} C${lx - w / 6} ${ly - 26} ${lx + w / 6} ${ly - 4} ${lx + w / 2 + 16} ${ly - 20}`, P(t, wLine + 0.1, 0.4, 'inOut'), { stroke: C.coral, sw: 8 }));
+        A.push(drawPath(`M${lx - w / 2 - 14} ${ly - 14} C${lx - w / 6} ${ly - 26} ${lx + w / 6} ${ly - 4} ${lx + w / 2 + 16} ${ly - 20}`, P(t, wLine - 0.3, 0.4, 'inOut'), { stroke: C.coral, sw: 8 }));
       }
       out.push(G({ o: pA.o * eB.o, y: pA.y + eB.y }, A));
     }
@@ -309,7 +313,7 @@ SCENES.status = {
       out.push(G({ o: ringP.o * pB.o }, B));
     }
     if (eP.o > 0) {
-      const px = lerp(960, 1330, mvC), py = lerp(800, 830, mvC), ps = lerp(1, 0.95, mvC);
+      const px = lerp(960, 1390, mvC), py = lerp(800, 820, mvC), ps = lerp(1.1, 1.3, mvC);
       const glow = 0.5 + 0.15 * Math.sin(t * 3);
       out.push(G({ o: eP.o * (1 - mvC) }, circle(px, py - 200, 190, { fill: 'url(#gGlow)', o: glow })));
       const lap = P(t, sd - 0.3, 0.4);
@@ -325,22 +329,22 @@ SCENES.status = {
     const plin = enter(t, sd - 0.35, { dy: 20 });
     if (plin.o > 0) {
       const Cc = [];
-      Cc.push(G({ x: 960, y: 830 }, rect(-575 + 3, 8, 1150, 62, { rx: 12, fill: 'rgba(30,42,58,0.10)' }), rect(-575, 0, 1150, 62, { rx: 12, fill: C.card, stroke: C.faint, sw: 2 }),
-        ...[['ENGINEER', -370], ['LAWYER', 0], ['PROGRAMMER', 370]].map(([s, x]) => T(s, x, 41, { size: 22, weight: 800, fill: C.ink2, anchor: 'middle', ls: 4 }))));
+      Cc.push(G({ x: 960, y: 820 }, rect(-680 + 3, 8, 1360, 66, { rx: 12, fill: 'rgba(30,42,58,0.10)' }), rect(-680, 0, 1360, 66, { rx: 12, fill: C.card, stroke: C.faint, sw: 2 }),
+        ...[['ENGINEER', -430], ['LAWYER', 0], ['PROGRAMMER', 430]].map(([s, x]) => T(s, x, 43, { size: 24, weight: 800, fill: C.ink2, anchor: 'middle', ls: 4 }))));
       out.push(G({ o: plin.o, y: plin.y }, Cc));
       const eE = enter(t, wEng - 0.35, { d: 0.5 });
-      if (eE.o > 0) out.push(G({ x: 590, y: 830 + eE.y, s: 0.95 * eE.s, o: eE.o }, person(t, { shirt: C.mustard, skin: C.skin[1], hair: C.hair[0], hairStyle: 0, seed: 14, mood: 'happy', arms: [[-52, -108], [30, -140]], look: 0.3 }),
+      if (eE.o > 0) out.push(G({ x: 530, y: 820 + eE.y, s: 1.3 * eE.s, o: eE.o }, person(t, { shirt: C.mustard, skin: C.skin[1], hair: C.hair[0], hairStyle: 0, seed: 14, mood: 'happy', arms: [[-52, -108], [30, -140]], look: 0.3 }),
         G({ x: 34, y: -128 }, blueprint()), hardHat()));
       const eW = enter(t, wLaw - 0.35, { d: 0.5 });
-      if (eW.o > 0) out.push(G({ x: 960, y: 830 + eW.y, s: 0.95 * eW.s, o: eW.o }, person(t, { shirt: C.ink, skin: C.skin[3], hair: C.hair[3], hairStyle: 4, seed: 16, mood: 'happy', look: 0.2 }),
+      if (eW.o > 0) out.push(G({ x: 960, y: 820 + eW.y, s: 1.3 * eW.s, o: eW.o }, person(t, { shirt: C.ink, skin: C.skin[3], hair: C.hair[3], hairStyle: 4, seed: 16, mood: 'happy', look: 0.2 }),
         path('M-14 -208 L0 -186 L14 -208 Z', { fill: C.card }), path('M-5 -200 L5 -200 L3 -192 L7 -158 L0 -150 L-7 -158 L-3 -192 Z', { fill: C.coral }),
         G({ x: 58, y: -84 }, briefcase())));
-      [[775, wLaw + 0.15], [1145, wLaw + 0.3]].forEach(([ex, et]) => {
+      [[745, wLaw + 0.15], [1175, wLaw + 0.3]].forEach(([ex, et]) => {
         const p = P(t, et, 0.45, 'outBack');
-        if (p > 0) out.push(G({ x: ex, y: 690, s: p, o: clamp(p * 2) }, circle(0, 0, 28, { fill: C.card, stroke: C.goldDeep, sw: 3 }), T('=', 0, 12, { size: 36, weight: 800, fill: C.goldDeep, anchor: 'middle' })));
+        if (p > 0) out.push(G({ x: ex, y: 610, s: p, o: clamp(p * 2) }, circle(0, 0, 32, { fill: C.card, stroke: C.goldDeep, sw: 3.5 }), T('=', 0, 14, { size: 42, weight: 800, fill: C.goldDeep, anchor: 'middle' })));
       });
-      const eS = enter(t, sd + 0.05, { dy: 10 });
-      if (eS.o > 0) out.push(G({ o: eS.o, y: eS.y }, hand('the same standing', 960, 975, { fill: C.goldDeep, size: 52 })));
+      const eS = enter(t, sd - 0.15, { dy: 10 });
+      if (eS.o > 0) out.push(G({ o: eS.o, y: eS.y }, hand('the same standing', 960, 972, { fill: C.goldDeep, size: 54 })));
     }
     return G({ o: X.o, y: X.y }, out);
   },
@@ -349,8 +353,8 @@ SCENES.status = {
     return [
       { t: S.start + 0.05, type: 'whoosh', dur: 0.5, gain: 0.4 },
       ...swaps.flatMap(ts => [{ t: ts, type: 'pop', pitch: 1.3, gain: 0.4 }, { t: ts + 0.45, type: 'thud', gain: 0.35 }]),
-      { t: cmp - 0.15, type: 'pop', pitch: 0.9, gain: 0.5 }, { t: wLine + 0.1, type: 'scribble', dur: 0.4, gain: 0.55 },
-      { t: resp - 0.55, type: 'whoosh', dur: 0.5, gain: 0.4 }, { t: resp - 0.1, type: 'chime', note: 3, gain: 0.6 },
+      { t: cmp - 0.15, type: 'pop', pitch: 0.9, gain: 0.5 }, { t: wLine - 0.3, type: 'scribble', dur: 0.4, gain: 0.55 },
+      { t: resp - 0.45, type: 'whoosh', dur: 0.5, gain: 0.4 }, { t: resp - 0.1, type: 'chime', note: 3, gain: 0.6 },
       ...[0, 2, 4].map((k, i) => ({ t: wAct - 0.4 + k * 0.1, type: 'pluck', note: [0, 2, 4][i], gain: 0.45 })),
       { t: wComp - 0.15, type: 'tick', gain: 0.5 },
       { t: sd - 0.7, type: 'whoosh', dur: 0.7, gain: 0.45 }, { t: sd - 0.3, type: 'thud', gain: 0.5 },
@@ -487,20 +491,20 @@ SCENES.agents = {
       if (eSt.o > 0) {
         Q.push(G({ o: eSt.o * glowP }, circle(stX, 700, 330, { fill: 'url(#gGlow)', o: 0.55 + 0.12 * Math.sin(t * 3) })));
         Q.push(G({ x: stX, y: eSt.y + dip, o: eSt.o }, G({ y: 860 }, desk(420)),
-          G({ x: -70, y: 712, s: 0.62, r: -3 }, specDoc({ w: 210, h: 270, reveal: 0.35, accent: C.coral })),
-          G({ x: 40, y: 836, r: 0 }, pencil())));
+          G({ x: 80, y: 712, s: 0.62, r: 3 }, specDoc({ w: 210, h: 270, reveal: 0.35, accent: C.coral })),
+          G({ x: 170, y: 836, r: 0 }, pencil())));
         Q.push(G({ o: eSt.o, y: eSt.y, s: 1 }, G({ x: stX, y: 552, s: pulse(t, landT, 0.5, 0.12) }, T('SPECIFYING', 0, 0, { size: 32, weight: 800, fill: C.coral, anchor: 'middle', ls: 6 }))));
       }
       // the cost: it hasn't gone (it drops in), then it moves to specifying
       const drop = P(t, wCost - 0.35, 0.4, 'in');
       if (drop > 0) {
         const hop = P(t, wMoved - 0.5, landT - (wMoved - 0.5), 'inOut');
-        const g0 = [880, 832], g1 = [stX + 95, 806 + dip];
-        let [wx, wy] = hop > 0 ? quadPoint(g0[0], g0[1], g1[0], g1[1], 0.28, hop) : [g0[0], lerp(-120, g0[1], drop)];
+        const g0 = [880, 832], g1 = [stX - 80, 806 + dip];
+        let [wx, wy] = hop > 0 ? quadPoint(g0[0], g0[1], g1[0], g1[1], -0.3, hop) : [g0[0], lerp(-120, g0[1], drop)];
         const squash = t > wCost - 0.05 ? 1 - 0.08 * Math.exp(-(t - wCost + 0.05) * 8) * Math.cos((t - wCost + 0.05) * 20) : 1;
         Q.push(puffs(g0[0], g0[1] + 52, P(t, wCost + 0.05, 0.6)));
         Q.push(puffs(g1[0], g1[1] + 52, P(t, landT, 0.6)));
-        Q.push(G({ x: wx, y: wy, r: hop > 0 && hop < 1 ? 10 * Math.sin(hop * Math.PI) : 0, sy: squash, sx: 2 - squash }, costWeight()));
+        Q.push(G({ x: wx, y: wy, r: hop > 0 && hop < 1 ? 14 * Math.sin(hop * Math.PI * 2) : 0, sy: squash, sx: 2 - squash }, costWeight()));
       }
       out.push(G({ o: p1.o, y: p1.y }, Q));
     }
@@ -508,9 +512,10 @@ SCENES.agents = {
     const e2 = P(t, l1 - 0.1, 0.5);
     const p2 = exitAt(t, handoff - 0.8, 0.45);
     if (e2 * p2.o > 0) {
-      const Q = [];
+      const Q = [], M = [];
       const toks = agentsMaze();
       const [rx, ry] = MZ_ROBOT;
+      const mzOff = lerp(390, 0, P(t, revival - 1.1, 0.9, 'inOut'));   // centred at first, then aside for the bubble
       const scan0 = dropped + 0.9, scanOn = t > scan0 && t < revival + 0.2 ? P(t, scan0, 0.3) * (1 - P(t, revival - 0.1, 0.3)) : 0;
       const beam = -Math.PI / 2 + (t - scan0) * 2.3;
       const beamD = a => { const d = Math.atan2(Math.sin(a - beam), Math.cos(a - beam)); return Math.abs(d); };
@@ -518,15 +523,16 @@ SCENES.agents = {
         const rp = P(t, l1 - 0.1 + k.d / 900, 0.35);
         if (rp <= 0) return;
         const lit = scanOn * clamp(1 - beamD(k.ang) / 0.35) * (k.d < 460 ? 1 : 0);
-        Q.push(line(k.ax, k.ay, lerp(k.ax, k.bx, rp), lerp(k.ay, k.by, rp), { stroke: k.col, sw: 10 + 4 * lit, o: 0.55 + 0.45 * lit }));
+        M.push(line(k.ax, k.ay, lerp(k.ax, k.bx, rp), lerp(k.ay, k.by, rp), { stroke: k.col, sw: 10 + 4 * lit, o: 0.55 + 0.45 * lit }));
       });
       if (scanOn > 0) {
         const L = 470, a1 = beam - 0.3, a2 = beam + 0.3;
-        Q.push(path(`M${rx} ${ry - 50} L${r2(rx + Math.cos(a1) * L)} ${r2(ry - 50 + Math.sin(a1) * L)} A${L} ${L} 0 0 1 ${r2(rx + Math.cos(a2) * L)} ${r2(ry - 50 + Math.sin(a2) * L)} Z`, { fill: C.plumLight, o: 0.28 * scanOn }));
+        M.push(`<clipPath id="e_agents_mz"><rect x="${MZ.x}" y="${MZ.y}" width="${MZ.cols * MZ.cell}" height="${MZ.rows * MZ.cell}"/></clipPath>`);
+        M.push(G({ clip: 'url(#e_agents_mz)' }, path(`M${rx} ${ry - 50} L${r2(rx + Math.cos(a1) * L)} ${r2(ry - 50 + Math.sin(a1) * L)} A${L} ${L} 0 0 1 ${r2(rx + Math.cos(a2) * L)} ${r2(ry - 50 + Math.sin(a2) * L)} Z`, { fill: C.plum, o: 0.2 * scanOn })));
       }
       // a stack of documents beside the maze
       const eD = enter(t, dropped - 0.2, { d: 0.5 });
-      if (eD.o > 0) Q.push(G({ x: 985, y: 800 + eD.y, o: eD.o }, G({ x: -26, r: -8, s: 0.5 }, docCard({ w: 220, h: 280, seed: 41, title: 'docs' })),
+      if (eD.o > 0) M.push(G({ x: 985, y: 800 + eD.y, o: eD.o }, G({ x: -26, r: -8, s: 0.5 }, docCard({ w: 220, h: 280, seed: 41, title: 'docs' })),
         G({ x: 0, y: -8, r: 3, s: 0.5 }, docCard({ w: 220, h: 280, seed: 42 })), G({ x: 24, y: -14, r: 9, s: 0.5 }, docCard({ w: 220, h: 280, seed: 43, title: 'README' }))));
       // the robot is lowered on a cable
       const low = P(t, dropped - 0.4, 1.1, 'outBack');
@@ -536,22 +542,25 @@ SCENES.agents = {
       const cableUp = P(t, dropped + 1.2, 0.6, 'in');
       const antY = robotBase + dy - 228 * rs;
       if (low > 0) {
-        Q.push(line(rx, lerp(-20, antY - 10, cableUp), rx, antY, { stroke: C.ink2, sw: 3 }));
-        const look = scanOn > 0 ? clamp(Math.cos(beam) * 1.2, -1, 1) : 0;
-        Q.push(G({ x: rx, y: robotBase + dy, r: swing, s: rs }, robot(t, { look })));
+        M.push(line(rx, lerp(-20, antY - 10, cableUp), rx, antY, { stroke: C.ink2, sw: 3 }));
+        const look = scanOn > 0 ? clamp(Math.cos(beam) * 1.2, -1, 1) : t > revival - 0.8 ? 0.9 * P(t, revival - 0.8, 0.4) : 0;
+        M.push(G({ x: rx, y: robotBase + dy, r: swing, s: rs }, robot(t, { look })));
       }
+      Q.push(G({ x: mzOff }, M));
       // its picture of the system: a rebuilt, different constellation
       const BX = 1375, BY = 470, BW = 600, BH = 420;
-      const Ko = once('agents_Korig', () => makeConstellation(88, 12, { rx: 215, ry: 132, minD: 66, extra: 0.4 }));
+      const Ko = once('agents_Korig', () => makeConstellation(85, 12, { rx: 215, ry: 132, minD: 66, extra: 0.4 }));
       const Ka = once('agents_Kagent', () => perturbConstellation(Ko, 5, 44, { drop: 0.3, add: 0.25 }));
       const eB = P(t, revival - 0.75, 0.6, 'outBack');
       if (eB > 0) {
-        [0.18, 0.36, 0.56, 0.76].forEach((q, k) => {
-          const [dx, dy2] = quadPoint(rx + 40, ry - 190, BX - BW * 0.36, BY + BH * 0.3, -0.18, q);
+        // a trail of thought dots from the robot's head to the bubble
+        [0.12, 0.34, 0.58, 0.8].forEach((q, k) => {
+          const [dx, dy2] = quadPoint(rx + mzOff + 52, ry - 104, BX - BW * 0.5 + 6, BY + 60, -0.22, q);
           const dp = P(t, revival - 0.95 + k * 0.08, 0.3, 'outBack');
-          if (dp > 0) Q.push(circle(dx, dy2, (6 + k * 4) * dp, { fill: C.night, stroke: 'rgba(30,42,58,0.35)', sw: 2 }));
+          if (dp > 0) Q.push(circle(dx + 2, dy2 + 4, (7 + k * 5) * dp, { fill: 'rgba(30,42,58,0.10)' }), circle(dx, dy2, (7 + k * 5) * dp, { fill: C.night }));
         });
-        Q.push(G({ x: BX, y: BY, s: lerp(0.3, 1, eB), o: clamp(eB * 2) }, thoughtBubble(BW, BH, { fill: C.night, stroke: 'rgba(30,42,58,0.35)', tailX: -BW * 0.3 })));
+        Q.push(G({ x: BX, y: BY, s: lerp(0.3, 1, eB), o: clamp(eB * 2) }, ellipse(3, 8, BW / 2, BH / 2, { fill: 'rgba(30,42,58,0.10)' }), ellipse(0, 0, BW / 2, BH / 2, { fill: C.night }),
+          ellipse(0, 0, BW / 2 - 10, BH / 2 - 10, { stroke: C.plum, sw: 2, o: 0.35 })));
         // sparks fly from the scanned code up into the picture
         const nA = Ka.pts.length;
         Ka.pts.forEach((pt, i) => {
@@ -559,73 +568,83 @@ SCENES.agents = {
           const fp = P(t, at - 0.5, 0.5, 'inOut');
           if (fp <= 0 || fp >= 1) return;
           const tk = toks[(i * 37) % toks.length];
-          const [qx, qy] = quadPoint((tk.ax + tk.bx) / 2, (tk.ay + tk.by) / 2, BX + pt[0], BY + pt[1], -0.25, fp);
+          const [qx, qy] = quadPoint((tk.ax + tk.bx) / 2 + mzOff, (tk.ay + tk.by) / 2, BX + pt[0], BY + pt[1], -0.25, fp);
           Q.push(circle(qx, qy, 16, { fill: 'url(#gGlow)', o: 0.7 }), circle(qx, qy, 5, { fill: C.coral }));
         });
         const ghostP = P(t, differs - 0.35, 0.5);
         const inner = [];
+        // the rebuilt picture never quite settles: once compared, its nodes drift a little
+        const wob = P(t, differs + 0.9, 0.8);
+        const Kw = wob > 0 ? { ...Ka, pts: Ka.pts.map((p, i) => [p[0] + wob * 5 * Math.sin(t * 1.7 + i * 1.3), p[1] + wob * 5 * Math.cos(t * 1.4 + i * 2.1), p[2], p[3]]) } : Ka;
         if (ghostP > 0) inner.push(constellation(t, Ko, { t0: differs - 0.35, dur: 0.7, size: 6.5, lineW: 2.4, ghost: true, color: C.gold, lineColor: C.goldLight, lineO: 0.95 }));
-        inner.push(constellation(t, Ka, { t0: revival - 0.25, dur: 1.8, size: 6.5, lineW: 2.4, color: C.coral, lineColor: C.coralLight, glow: 0.35, lineO: 0.8 }));
+        inner.push(constellation(t, Kw, { t0: revival - 0.25, dur: 1.8, size: 6.5, lineW: 2.4, color: C.coral, lineColor: C.coralLight, glow: 0.35, lineO: 0.8 }));
         // mark the differences: shifted nodes and wrong links
         if (ghostP > 0) {
           const disp = once('agents_disp', () => Ka.pts.map((p, i) => [i, Math.hypot(p[0] - Ko.pts[i][0], p[1] - Ko.pts[i][1])]).sort((a, b) => b[1] - a[1]).slice(0, 3).map(d => d[0]));
-          Ka.pts.forEach((p, i) => inner.push(drawPath(`M${r2(Ko.pts[i][0])} ${r2(Ko.pts[i][1])} L${r2(p[0])} ${r2(p[1])}`, P(t, differs + 0.25 + i * 0.03, 0.4, 'inOut'), { stroke: C.coralLight, sw: 2, o: 0.8 })));
+          Kw.pts.forEach((p, i) => inner.push(drawPath(`M${r2(Ko.pts[i][0])} ${r2(Ko.pts[i][1])} L${r2(p[0])} ${r2(p[1])}`, P(t, differs + 0.25 + i * 0.03, 0.4, 'inOut'), { stroke: C.coralLight, sw: 2, o: 0.8 })));
           disp.forEach((i, k) => {
             const rp = P(t, differs + 0.55 + k * 0.18, 0.4, 'outBack');
-            if (rp > 0) inner.push(circle(Ka.pts[i][0], Ka.pts[i][1], 20 * rp, { stroke: C.coral, sw: 3.5 }));
+            if (rp > 0) inner.push(circle(Kw.pts[i][0], Kw.pts[i][1], 20 * rp * (1 + 0.1 * Math.sin(t * 4 + k * 2)), { stroke: C.coral, sw: 3.5 }));
           });
           const wrong = once('agents_wrong', () => Ka.edges.filter(([a, b]) => !Ko.edges.some(([c, d]) => (a === c && b === d) || (a === d && b === c))));
           wrong.forEach(([a, b], k) => {
             const cp = P(t, differs + 0.9 + k * 0.15, 0.4);
-            if (cp > 0) inner.push(G({ x: (Ka.pts[a][0] + Ka.pts[b][0]) / 2, y: (Ka.pts[a][1] + Ka.pts[b][1]) / 2 }, circle(0, 0, 15, { fill: C.night, o: cp }), crossMark(cp, { size: 9, sw: 5, color: C.coral })));
+            if (cp > 0) inner.push(G({ x: (Kw.pts[a][0] + Kw.pts[b][0]) / 2, y: (Kw.pts[a][1] + Kw.pts[b][1]) / 2 }, circle(0, 0, 15, { fill: C.night, o: cp }), crossMark(cp, { size: 9, sw: 5, color: C.coral })));
           });
         }
         Q.push(G({ x: BX, y: BY, s: lerp(0.3, 1, eB), o: clamp(eB * 2) }, inner));
         // labels
-        const eR = enter(t, revival + 0.1, { dy: 10 });
+        const eR = enter(t, revival - 0.15, { dy: 10 });
         if (eR.o > 0) {
           const w = measure('revival', 64, 'hand', 700);
           Q.push(G({ o: eR.o, y: eR.y }, hand('revival', BX - 40, 790, { size: 64, fill: C.coralDark }), G({ x: BX - 40 + w / 2 + 62, y: 772 }, pill('Naur', { size: 18 }))));
         }
-        const eDf = enter(t, differs + 0.1, { dy: 10 });
+        const eDf = enter(t, differs - 0.1, { dy: 10 });
         if (eDf.o > 0) Q.push(G({ o: eDf.o, y: eDf.y }, richText([{ t: 'its picture', fill: C.coralDark }, { t: '  ≠  ', fill: C.ink2 }, { t: 'the original', fill: C.goldDeep }], BX, 870, { font: 'hand', size: 50, weight: 700, anchor: 'middle' })));
       }
       out.push(G({ o: e2 * p2.o, y: p2.y }, Q));
     }
     // ---------------- phase 3: the spec is the handoff
-    const e3 = enter(t, handoff - 0.4, { d: 0.6 });
+    const e3 = enter(t, handoff - 0.6, { d: 0.6 });
     if (e3.o > 0) {
-      const eH = enter(t, handoff - 0.3, { dy: 14 });
+      const eH = enter(t, handoff - 0.45, { dy: 14 });
       out.push(G({ o: eH.o, y: eH.y }, headline([{ t: 'The ' }, { t: 'spec', fill: C.coral }, { t: ' is the handoff' }])));
       // agent at its desk, on the right
       const ax = 1450, ay = 790;
-      const receive = P(t, gets + 0.75, 0.3);
-      const screen = receive > 0 ? mixColor(C.night, C.teal, 0.6 * (1 - P(t, gets + 1.1, 0.8))) : C.night;
+      const receive = P(t, gets + 0.55, 0.3);
+      const screen = receive > 0 ? mixColor(C.night, C.teal, 0.6 * (1 - P(t, gets + 0.9, 0.8))) : C.night;
       out.push(G({ x: ax, y: ay + e3.y, o: e3.o, s: e3.s }, G({ y: -40 }, robot(t, { look: t > gets ? -0.6 : -0.3 })),
         G({ y: 70 }, laptopFront(t, { w: 230, h: 140, screen })), G({ y: 90 }, desk(420))));
       // the PM writes the spec; the theory grows while writing
-      const px = 380, py = 905;
-      const write = P(t, handoff + 0.1, gets - 0.4 - (handoff + 0.1), 'linear');
+      const px = 430, py = 905;
+      const write = P(t, handoff + 0.1, gets - 0.5 - (handoff + 0.1), 'linear');
       const KP = once('agents_Kpm', () => makeConstellation(23, 11, { rx: 92, ry: 58, minD: 26, extra: 0.35 }));
       const keepGlow = 1 + 0.5 * Math.sin(Math.max(0, t - keep) * 5) * P(t, keep, 0.3) * (1 - P(t, keep + 1.2, 0.5));
-      const wig = t < gets - 0.4 ? Math.sin(t * 17) * 5 : 0;
-      const q = P(t, gets + 0.2, 0.5, 'inOut');
-      const arms = [[lerp(-40, -52, q), lerp(-118, -108, q)], [lerp(34, 52, q) + wig, lerp(-126, -108, q)]];
-      out.push(G({ x: 560, y: 846 + e3.y, o: e3.o }, desk(460)));
+      // the writing hand follows the lines of the spec as they appear
+      const DX = 600, DY = 725;
+      const ln = Math.min(5, Math.floor(write * 6)), lp = write * 6 - ln;
+      const tipX = DX - 50 + 70 * lp + 5 * Math.sin(t * 13), tipY = DY - 57 + ln * 26;
+      const reach = P(t, handoff - 0.1, 0.35, 'inOut') * (1 - P(t, gets - 0.5, 0.35, 'inOut'));
+      // the hand holds the pencil halfway up its body (the pencil leans left, tip on the line)
+      const hand2 = [lerp(52, tipX - 22 - px, reach), lerp(-108, tipY - 33 - py, reach)];
+      const arms = [[-52, -108], hand2];
+      out.push(G({ x: 670, y: 864 + e3.y, o: e3.o }, desk(380)));
+      // the spec document: written on the desk, then it flies to the agent (drawn before the PM, so the hand sits on the page)
+      const fly = P(t, gets - 0.25, 0.85, 'inOut');
+      const land = [ax + 160, ay + 28];
+      const [sx, sy] = fly > 0 ? quadPoint(DX, DY, land[0], land[1], -0.32, fly) : [DX, DY];
+      const ss = lerp(1, 0.42, fly) * pulse(t, gets + 0.6, 0.35, 0.12);
+      if (fly > 0) out.unshift(drawPath(arcPath(DX, DY, land[0], land[1], -0.32), fly, { stroke: C.coral, sw: 3, o: 0.35 * (1 - P(t, keep + 0.4, 0.5)) }));
+      out.push(G({ x: sx, y: sy + e3.y, s: ss, r: lerp(0, 8, fly), o: e3.o }, specDoc({ w: 210, h: 270, reveal: write, accent: C.coral })));
       out.push(G({ x: px, y: py + e3.y, o: e3.o }, person(t, { shirt: C.coral, skin: C.skin[2], hair: C.hair[1], hairStyle: 2, seed: 11, mood: 'happy', look: 0.5, arms })));
-      const eBub = P(t, handoff + 0.15, 0.6, 'outBack');
-      if (eBub > 0) out.push(G({ x: px + 40, y: 440 + e3.y, s: lerp(0.4, 1, eBub) * pulse(t, tbuild - 0.1, 0.6, 0.06), o: e3.o * clamp(eBub * 2) },
+      if (reach > 0.02) out.push(G({ x: px + hand2[0] + 22, y: py + hand2[1] + 33 + e3.y, sx: -1, sy: 1, o: e3.o * clamp(reach * 3) }, pencil()));
+      const eBub = P(t, tbuild - 0.8, 0.6, 'outBack');
+      const grow = 1 + 0.28 * P(t, keep - 0.2, 0.6, 'outBack');
+      if (eBub > 0) out.push(G({ x: px + 40, y: 440 - 30 * (grow - 1) + e3.y, s: lerp(0.4, 1, eBub) * pulse(t, tbuild - 0.1, 0.6, 0.06) * grow, o: e3.o * clamp(eBub * 2) },
         circle(0, 0, 150, { fill: 'url(#gGlow)', o: 0.5 * P(t, tbuild - 0.2, 0.8) * keepGlow }),
         thoughtBubble(250, 170, { fill: C.night, stroke: C.night, tailX: -60 }),
-        constellation(t, KP, { t0: tbuild - 0.3, dur: 2.0, size: 5.5 * keepGlow, lineW: 2, glow: 0.9 * keepGlow })));
-      // the spec document: written on the desk, then it flies to the agent
-      const fly = P(t, gets - 0.05, 0.85, 'inOut');
-      const land = [ax + 160, ay + 28];
-      const [sx, sy] = fly > 0 ? quadPoint(610, 700, land[0], land[1], -0.32, fly) : [610, 700];
-      const ss = lerp(1, 0.42, fly) * pulse(t, gets + 0.8, 0.35, 0.12);
-      if (fly > 0) out.unshift(drawPath(arcPath(610, 700, land[0], land[1], -0.32), fly, { stroke: C.coral, sw: 3, o: 0.35 * (1 - P(t, keep + 0.4, 0.5)) }));
-      out.push(G({ x: sx, y: sy + e3.y, s: ss, r: lerp(-4, 8, fly), o: e3.o }, specDoc({ w: 210, h: 270, reveal: write, accent: C.coral })));
-      const l1p = enter(t, gets + 0.5, { dy: 8 }), l2p = enter(t, keep - 0.1, { dy: 8 });
+        constellation(t, KP, { t0: tbuild - 0.4, dur: 2.2, size: 5.5 * keepGlow, lineW: 2, glow: 0.9 * keepGlow })));
+      const l1p = enter(t, gets + 0.3, { dy: 8 }), l2p = enter(t, keep - 0.1, { dy: 8 });
       if (l1p.o > 0) out.push(G({ o: l1p.o, y: l1p.y }, richText([{ t: 'gets ', weight: 500, fill: C.ink2 }, { t: 'the spec', weight: 800, fill: C.coral }], ax, 1030, { size: 32, anchor: 'middle' })));
       if (l2p.o > 0) out.push(G({ o: l2p.o, y: l2p.y }, richText([{ t: 'you keep ', weight: 500, fill: C.ink2 }, { t: 'the theory', weight: 800, fill: C.goldDeep }], px + 40, 1030, { size: 32, anchor: 'middle' })));
     }
@@ -648,7 +667,7 @@ SCENES.agents = {
       { t: differs + 0.9, type: 'fizzle', gain: 0.35 },
       { t: handoff - 0.8, type: 'whoosh', dur: 0.5, gain: 0.4 }, { t: handoff - 0.3, type: 'pop', pitch: 0.95, gain: 0.45 },
       { t: handoff + 0.1, type: 'scribble', dur: 3.0, gain: 0.3 }, { t: tbuild - 0.1, type: 'chime', note: 3, gain: 0.6 },
-      { t: gets - 0.05, type: 'whoosh', dur: 0.85, gain: 0.6 }, { t: gets + 0.75, type: 'pop', pitch: 1.2, gain: 0.55 },
+      { t: gets - 0.25, type: 'whoosh', dur: 0.85, gain: 0.6 }, { t: gets + 0.55, type: 'pop', pitch: 1.2, gain: 0.55 },
       { t: keep, type: 'chime', note: 4, gain: 0.7 },
     ];
   },
