@@ -1,0 +1,126 @@
+{
+  "title": "Specs as Theory Building",
+  "fps": 30,
+  "leadIn": 3.8,
+  "tail": 3.3,
+  "lineGap": 0.3,
+  "sceneGap": 0.6,
+  "pronounce": {
+    "Naur": {
+      "kokoro": "[Naur](/nˈaʊɚ/)",
+      "respell": "Now-er"
+    },
+    "Naur's": {
+      "kokoro": "[Naur's](/nˈaʊɚz/)",
+      "respell": "Now-er's"
+    }
+  },
+  "scenes": [
+    {
+      "id": "hook",
+      "lines": [
+        {
+          "text": "What does a software team {q}actually produce?"
+        },
+        {
+          "text": "In {y}1985, Peter Naur's {ans}surprising answer: {notcode}not the code.",
+          "pauseAfter": 0.5
+        }
+      ]
+    },
+    {
+      "id": "thesis",
+      "lines": [
+        {
+          "text": "Programming, he argued, is {tb}theory building: working out how {world}part of the world will be handled by a {prog}program."
+        },
+        {
+          "text": "{sec}Code and documents, even {specs}specs, come second."
+        }
+      ]
+    },
+    {
+      "id": "ryle",
+      "lines": [
+        {
+          "text": "It's theory in {ryle}Gilbert Ryle's sense: {how}knowing how, and {explain}being able to explain it."
+        },
+        {
+          "text": "Whoever holds it can {map}map the program to the world, {justify}justify each part, and {adapt}judge which changes fit.",
+          "pauseAfter": 0.45
+        }
+      ]
+    },
+    {
+      "id": "compiler",
+      "lines": [
+        {
+          "text": "Naur saw a team {inherit}inherit a compiler, {docs}with full code and full docs, and still {patch}patch its design apart."
+        },
+        {
+          "text": "{notravel}The theory didn't travel."
+        },
+        {
+          "text": "And when its holders {leave}leave, a program {dies}dies, even {runs}while it still runs.",
+          "pauseAfter": 0.5
+        }
+      ]
+    },
+    {
+      "id": "agents",
+      "lines": [
+        {
+          "text": "Now {agents}agents write the code."
+        },
+        {
+          "text": "Text is {free}nearly free. But for Naur, {never}text was never the expensive part. {theory}The theory is."
+        },
+        {
+          "text": "And {specify}specifying is how you build it."
+        },
+        {
+          "text": "The agent {getsspec}gets your spec. {keep}You keep the theory.",
+          "pauseAfter": 0.5
+        }
+      ]
+    },
+    {
+      "id": "enterprise",
+      "lines": [
+        {
+          "text": "In a {reg}regulated enterprise, that theory is {scattered}scattered: {rule}a rule buried in policy, {quirk}a platform quirk one engineer knows, {unsaid}a constraint nobody says out loud."
+        },
+        {
+          "text": "{rgtb}Requirements gathering is theory building.",
+          "pauseAfter": 0.55
+        }
+      ]
+    },
+    {
+      "id": "takeaways",
+      "lines": [
+        {
+          "text": "So: {t1}trace every requirement to its source."
+        },
+        {
+          "text": "{t2}Write down the why, and {rejected}what you rejected."
+        },
+        {
+          "text": "{t3}Rehearse change: does a new rule {fit}fit, or {patch}need a patch?"
+        },
+        {
+          "text": "And {t4}sit with the people who hold the theory. {loop}Keep them in the loop as agents build.",
+          "pauseAfter": 0.7
+        }
+      ]
+    },
+    {
+      "id": "close",
+      "lines": [
+        {
+          "text": "{c1}Code is the output. {c2}The spec is the handoff. {c3}The theory is the product."
+        }
+      ]
+    }
+  ]
+}

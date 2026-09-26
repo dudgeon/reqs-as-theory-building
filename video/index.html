@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Specs as Theory Building</title>
+<style>
+  @font-face { font-family: 'Fraunces'; src: url(fonts/fraunces-latin-400-normal.woff2) format('woff2'); font-weight: 400; font-style: normal; }
+  @font-face { font-family: 'Fraunces'; src: url(fonts/fraunces-latin-600-normal.woff2) format('woff2'); font-weight: 600; font-style: normal; }
+  @font-face { font-family: 'Fraunces'; src: url(fonts/fraunces-latin-700-normal.woff2) format('woff2'); font-weight: 700; font-style: normal; }
+  @font-face { font-family: 'Fraunces'; src: url(fonts/fraunces-latin-400-italic.woff2) format('woff2'); font-weight: 400; font-style: italic; }
+  @font-face { font-family: 'Fraunces'; src: url(fonts/fraunces-latin-600-italic.woff2) format('woff2'); font-weight: 600; font-style: italic; }
+  @font-face { font-family: 'Inter'; src: url(fonts/inter-latin-400-normal.woff2) format('woff2'); font-weight: 400; }
+  @font-face { font-family: 'Inter'; src: url(fonts/inter-latin-500-normal.woff2) format('woff2'); font-weight: 500; }
+  @font-face { font-family: 'Inter'; src: url(fonts/inter-latin-600-normal.woff2) format('woff2'); font-weight: 600; }
+  @font-face { font-family: 'Inter'; src: url(fonts/inter-latin-700-normal.woff2) format('woff2'); font-weight: 700; }
+  @font-face { font-family: 'Inter'; src: url(fonts/inter-latin-800-normal.woff2) format('woff2'); font-weight: 800; }
+  @font-face { font-family: 'JetBrains Mono'; src: url(fonts/jetbrains-mono-latin-400-normal.woff2) format('woff2'); font-weight: 400; }
+  @font-face { font-family: 'JetBrains Mono'; src: url(fonts/jetbrains-mono-latin-600-normal.woff2) format('woff2'); font-weight: 600; }
+  @font-face { font-family: 'Caveat'; src: url(fonts/caveat-latin-500-normal.woff2) format('woff2'); font-weight: 500; }
+  @font-face { font-family: 'Caveat'; src: url(fonts/caveat-latin-700-normal.woff2) format('woff2'); font-weight: 700; }
+  html, body { margin: 0; background: #1b1f27; }
+  #stage { width: 1920px; height: 1080px; position: relative; overflow: hidden; background: #F3EDE2; transform-origin: 0 0; }
+  #stage > svg { position: absolute; left: 0; top: 0; }
+  body.preview { display: flex; flex-direction: column; align-items: center; font: 14px system-ui, sans-serif; color: #ddd; }
+  #controls { display: none; gap: 10px; align-items: center; padding: 8px; width: 100%; box-sizing: border-box; }
+  body.preview #controls { display: flex; }
+  #controls input[type=range] { flex: 1; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <svg id="svg" viewBox="0 0 1920 1080" width="1920" height="1080" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="gGlow"><stop offset="0" stop-color="#FFD98A" stop-opacity="0.9"/><stop offset="0.35" stop-color="#F2A93B" stop-opacity="0.35"/><stop offset="1" stop-color="#F2A93B" stop-opacity="0"/></radialGradient>
+      <radialGradient id="gGlowTeal"><stop offset="0" stop-color="#A7DCD3" stop-opacity="0.9"/><stop offset="1" stop-color="#2A9D8F" stop-opacity="0"/></radialGradient>
+      <radialGradient id="gVignette" cx="0.5" cy="0.5" r="0.75"><stop offset="0.55" stop-color="#3a2a10" stop-opacity="0"/><stop offset="1" stop-color="#3a2a10" stop-opacity="0.22"/></radialGradient>
+      <radialGradient id="gNight" cx="0.45" cy="0.4" r="0.7"><stop offset="0" stop-color="#2E3D5C"/><stop offset="1" stop-color="#1A2334"/></radialGradient>
+      <pattern id="pDots" width="48" height="48" patternUnits="userSpaceOnUse"><circle cx="24" cy="24" r="1.6" fill="#CDBFA6" opacity="0.55"/></pattern>
+      <filter id="fSoft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="8"/></filter>
+    </defs>
+    <image href="assets/paper.jpg" x="0" y="0" width="1920" height="1080" preserveAspectRatio="none"/>
+    <rect width="1920" height="1080" fill="url(#pDots)"/>
+    <g id="root"></g>
+    <rect width="1920" height="1080" fill="url(#gVignette)" pointer-events="none"/>
+  </svg>
+</div>
+<div id="controls">
+  <button id="play">▶︎</button>
+  <input id="scrub" type="range" min="0" max="90" step="0.0333" value="0">
+  <span id="clock">0.00s</span>
+</div>
+<script src="timeline.js"></script>
+<script src="engine.js"></script>
+<script src="shapes.js"></script>
+<script src="scenes.js"></script>
+<script src="main.js"></script>
+</body>
+</html>
