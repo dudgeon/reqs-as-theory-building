@@ -1,0 +1,135 @@
+1
+00:00:03,800 --> 00:00:05,980
+What does a software team actually produce?
+
+2
+00:00:06,310 --> 00:00:10,590
+In 1985, Peter Naur's surprising answer: not the code.
+
+3
+00:00:11,020 --> 00:00:13,800
+Programming, he argued, is theory building:
+
+4
+00:00:14,040 --> 00:00:15,360
+working out how part of the world
+
+5
+00:00:15,380 --> 00:00:17,020
+will be handled by a program.
+
+6
+00:00:17,290 --> 00:00:19,950
+Code and documents, even specs, come second.
+
+7
+00:00:20,550 --> 00:00:22,390
+It's theory in Gilbert Ryle's sense:
+
+8
+00:00:22,550 --> 00:00:25,150
+knowing how, and being able to explain it.
+
+9
+00:00:25,290 --> 00:00:27,810
+Whoever holds it can map the program to the world,
+
+10
+00:00:27,830 --> 00:00:30,890
+justify each part, and judge which changes fit.
+
+11
+00:00:31,300 --> 00:00:33,520
+Naur saw a team inherit a compiler,
+
+12
+00:00:33,580 --> 00:00:35,520
+with full code and full docs,
+
+13
+00:00:35,680 --> 00:00:37,480
+and still patch its design apart.
+
+14
+00:00:37,640 --> 00:00:39,000
+The theory didn't travel.
+
+15
+00:00:39,270 --> 00:00:40,630
+And when its holders leave,
+
+16
+00:00:40,650 --> 00:00:43,130
+a program dies, even while it still runs.
+
+17
+00:00:43,630 --> 00:00:45,230
+Now agents write the code.
+
+18
+00:00:45,430 --> 00:00:46,890
+Text is nearly free.
+
+19
+00:00:47,130 --> 00:00:49,910
+But for Naur, text was never the expensive part.
+
+20
+00:00:50,010 --> 00:00:50,970
+The theory is.
+
+21
+00:00:51,200 --> 00:00:53,180
+And specifying is how you build it.
+
+22
+00:00:53,340 --> 00:00:55,800
+The agent gets your spec. You keep the theory.
+
+23
+00:00:56,250 --> 00:00:57,850
+In a regulated enterprise,
+
+24
+00:00:57,950 --> 00:01:01,390
+that theory is scattered: a rule buried in policy,
+
+25
+00:01:01,550 --> 00:01:03,830
+a platform quirk one engineer knows,
+
+26
+00:01:03,970 --> 00:01:06,050
+a constraint nobody says out loud.
+
+27
+00:01:06,310 --> 00:01:08,630
+Requirements gathering is theory building.
+
+28
+00:01:09,140 --> 00:01:11,420
+So: trace every requirement to its source.
+
+29
+00:01:11,690 --> 00:01:13,770
+Write down the why, and what you rejected.
+
+30
+00:01:14,110 --> 00:01:17,210
+Rehearse change: does a new rule fit, or need a patch?
+
+31
+00:01:17,490 --> 00:01:19,570
+And sit with the people who hold the theory.
+
+32
+00:01:19,830 --> 00:01:21,830
+Keep them in the loop as agents build.
+
+33
+00:01:22,530 --> 00:01:25,390
+Code is the output. The spec is the handoff.
+
+34
+00:01:25,470 --> 00:01:26,770
+The theory is the product.
