@@ -426,8 +426,8 @@ const MON_PANELS = once('monitor_panels', () => {
 const MON = { fy: 935, ps: 0.92 };
 // veterans: x in phase 1 (centre stage) and phase 2 (moved left to make room)
 const MON_V = [
-  { x: 640, x2: 330, shirt: C.teal, skin: C.skin[1], hair: '#CFCAC2', hs: 0, seed: 31 },
-  { x: 860, x2: 548, shirt: C.blue, skin: C.skin[4], hair: C.hair[4], hs: 1, seed: 32 },
+  { x: 750, x2: 330, shirt: C.teal, skin: C.skin[1], hair: '#CFCAC2', hs: 0, seed: 31 },
+  { x: 968, x2: 548, shirt: C.blue, skin: C.skin[4], hair: C.hair[4], hs: 1, seed: 32 },
 ];
 const MON_M = [
   { x: 1336, shirt: C.olive, skin: C.skin[2], hair: C.hair[3], hs: 3, seed: 33, book: C.coralDark, r: -4 },
@@ -556,7 +556,7 @@ SCENES.monitor = {
     // ---- the veterans: there since the design, with bright theories
     const vFlash = a => P(t, a, 0.25) * (1 - P(t, a + 0.9, 0.6));
     const easyGlow = P(t, c.easy - 0.35, 0.3) * (1 - P(t, c.easy + 1.2, 0.6));
-    const mv = P(t, c.mv, 0.9, 'inOut');
+    const mv = P(t, c.mv, 1.0, 'inOut');
     const vx = i => lerp(MON_V[i].x, MON_V[i].x2, mv);
     MON_V.forEach((pp, i) => {
       const e = enter(t, c.vet - 0.3 + i * 0.14, { dy: 34, d: 0.6 });
@@ -567,7 +567,7 @@ SCENES.monitor = {
       const pointing = i === 1 && t > c.easy - 0.35 && t < c.easy + 1.1;
       const walking = mv > 0.02 && mv < 0.98;
       const arms = walking ? 'down' : shrug ? 'shrug' : pointing ? 'point' : glance ? [[-52, -108], [60, -150]] : i === 0 ? 'hips' : 'down';
-      out.push(G({ x: vx(i), y: fy + e.y + walkBob(t, c.mv, c.mv + 0.9, i), s: ps * e.s, o: e.o }, holder(t, {
+      out.push(G({ x: vx(i), y: fy + e.y + walkBob(t, c.mv, c.mv + 1.0, i), s: ps * e.s, o: e.o }, holder(t, {
         shirt: pp.shirt, skin: pp.skin, hair: pp.hair, hairStyle: pp.hs, seed: pp.seed, look: glance ? 1 : 0.5, flip: walking,
         mood: shrug ? 'closed' : 'happy', arms, glowHead: 0.8 * clamp(glow),
         bubble: P(t, c.vet + 0.05 + i * 0.14, 0.6),
@@ -594,7 +594,7 @@ SCENES.monitor = {
     // the annotated code card a veteran glances at
     const cardE = P(t, c.ann - 0.4, 0.45, 'outBack');
     const cardOut = P(t, c.nd - 0.45, 0.4);
-    const cardPos = [1262, 712];
+    const cardPos = [1392, 712];
     if (cardE > 0 && cardOut < 1) {
       out.push(G({ x: cardPos[0], y: cardPos[1] + wobble(t, 0.5, 3), s: lerp(0.5, 0.95, clamp(cardE)) * (1 - 0.15 * cardOut), r: 3, o: clamp(cardE * 2) * (1 - cardOut) },
         annotatedCard({ w: 250, h: 190, seed: 65, note: P(t, c.ann - 0.1, 0.7) })));
@@ -606,7 +606,7 @@ SCENES.monitor = {
     const pg = P(t, c.nd - 0.35, 0.9, 'out');
     const pgOut = P(t, c.nd + 1.9, 0.7, 'inOut');
     if (pg > 0 && pgOut < 1) {
-      const px = lerp(1480, 1240, pg) + 70 * pgOut, py = lerp(1090, 690, pg) - 90 * pgOut + wobble(t, 0.7, 5);
+      const px = lerp(1600, 1380, pg) + 70 * pgOut, py = lerp(1090, 690, pg) - 90 * pgOut + wobble(t, 0.7, 5);
       const page = [
         rect(-88, -112, 176, 224, { rx: 10, fill: C.card, o: 0.55 }),
         rect(-88, -112, 176, 224, { rx: 10, stroke: C.ink3, sw: 3, dash: '11 9' }),
