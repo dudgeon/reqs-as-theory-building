@@ -39,97 +39,97 @@ Whoever holds it can map the program to the world,
 justify each part, and judge which changes fit.
 
 11
-00:00:31,300 --> 00:00:33,520
-Naur saw a team inherit a compiler,
+00:00:31,300 --> 00:00:34,120
+Naur saw successive teams inherit a compiler,
 
 12
-00:00:33,580 --> 00:00:35,520
+00:00:34,300 --> 00:00:36,220
 with full code and full docs,
 
 13
-00:00:35,680 --> 00:00:37,480
+00:00:36,360 --> 00:00:38,240
 and still patch its design apart.
 
 14
-00:00:37,640 --> 00:00:39,000
+00:00:38,400 --> 00:00:39,760
 The theory didn't travel.
 
 15
-00:00:39,270 --> 00:00:40,630
+00:00:40,030 --> 00:00:41,390
 And when its holders leave,
 
 16
-00:00:40,650 --> 00:00:43,130
+00:00:41,410 --> 00:00:43,890
 a program dies, even while it still runs.
 
 17
-00:00:43,630 --> 00:00:45,230
+00:00:44,390 --> 00:00:45,990
 Now agents write the code.
 
 18
-00:00:45,430 --> 00:00:46,890
+00:00:46,190 --> 00:00:47,650
 Text is nearly free.
 
 19
-00:00:47,130 --> 00:00:49,910
+00:00:47,890 --> 00:00:50,670
 But for Naur, text was never the expensive part.
 
 20
-00:00:50,010 --> 00:00:50,970
+00:00:50,770 --> 00:00:51,730
 The theory is.
 
 21
-00:00:51,200 --> 00:00:53,180
+00:00:51,960 --> 00:00:53,940
 And specifying is how you build it.
 
 22
-00:00:53,340 --> 00:00:55,800
+00:00:54,100 --> 00:00:56,560
 The agent gets your spec. You keep the theory.
 
 23
-00:00:56,250 --> 00:00:57,850
+00:00:57,010 --> 00:00:58,610
 In a regulated enterprise,
 
 24
-00:00:57,950 --> 00:01:01,390
+00:00:58,710 --> 00:01:02,150
 that theory is scattered: a rule buried in policy,
 
 25
-00:01:01,550 --> 00:01:03,830
+00:01:02,310 --> 00:01:04,590
 a platform quirk one engineer knows,
 
 26
-00:01:03,970 --> 00:01:06,050
+00:01:04,730 --> 00:01:06,810
 a constraint nobody says out loud.
 
 27
-00:01:06,310 --> 00:01:08,630
+00:01:07,070 --> 00:01:09,390
 Requirements gathering is theory building.
 
 28
-00:01:09,140 --> 00:01:11,420
+00:01:09,900 --> 00:01:12,180
 So: trace every requirement to its source.
 
 29
-00:01:11,690 --> 00:01:13,770
+00:01:12,450 --> 00:01:14,530
 Write down the why, and what you rejected.
 
 30
-00:01:14,110 --> 00:01:17,210
+00:01:14,870 --> 00:01:17,970
 Rehearse change: does a new rule fit, or need a patch?
 
 31
-00:01:17,490 --> 00:01:19,570
+00:01:18,250 --> 00:01:20,330
 And sit with the people who hold the theory.
 
 32
-00:01:19,830 --> 00:01:21,830
+00:01:20,590 --> 00:01:22,590
 Keep them in the loop as agents build.
 
 33
-00:01:22,530 --> 00:01:25,390
+00:01:23,290 --> 00:01:26,150
 Code is the output. The spec is the handoff.
 
 34
-00:01:25,470 --> 00:01:26,770
+00:01:26,230 --> 00:01:27,530
 The theory is the product.

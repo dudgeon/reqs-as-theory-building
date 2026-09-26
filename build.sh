@@ -24,3 +24,5 @@ echo "== rendering frames"
 node video/render.js --frames --workers "${WORKERS:-4}"
 echo "== encoding"
 "$PY" pipeline/encode.py
+echo "== storyboard"
+"$PY" pipeline/storyboard.py

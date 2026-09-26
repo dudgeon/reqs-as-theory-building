@@ -23,7 +23,7 @@ BEATS = [
     ("thesis", "specs", 1.0, "Code, docs and even the SPEC drop onto a shelf of *secondary products*. *Primary: the theory.*"),
     ("ryle", "explain", 0.9, "Theory in Gilbert Ryle's sense. *Knowing that* is a card of facts. *Knowing how* is doing it (casting a line) and being able to explain why."),
     ("ryle", "adapt", 1.3, "Whoever holds the theory can **Map** the world to the program, **Justify** each part, and **Adapt**: judge which changes fit."),
-    ("compiler", "patch", 1.6, "Naur's case: Team B inherits a compiler with full code and docs. Their extensions are taped-on patches that break its design."),
+    ("compiler", "patch", 1.6, "Naur's case: Team B inherits a compiler with full code and docs, yet proposes taped-on patches that would break its design. Later maintainers, without Team A, did break it."),
     ("compiler", "notravel", 0.45, "The theory tries to travel to Team B and can't: **code + docs ≠ theory.**"),
     ("compiler", "runs", 1.0, "Team A leaves and the monitor flatlines: *program death*. The program still runs, but nobody can change it intelligently."),
     ("agents", "free", 0.9, "Now agents write the code. Text is nearly free: **$0.00**."),

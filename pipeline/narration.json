@@ -55,7 +55,7 @@
       "id": "compiler",
       "lines": [
         {
-          "text": "Naur saw a team {inherit}inherit a compiler, {docs}with full code and full docs, and still {patch}patch its design apart."
+          "text": "Naur saw successive teams {inherit}inherit a compiler, {docs}with full code and full docs, and still {patch}patch its design apart."
         },
         {
           "text": "{notravel}The theory didn't travel."

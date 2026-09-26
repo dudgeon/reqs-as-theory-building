@@ -1,6 +1,6 @@
 # Storyboard: *Specs as Theory Building*
 
-19 beats across 90 seconds. Keyframes are exported from the rendered video (`python pipeline/storyboard.py`), so they always match the current cut.
+19 beats across 91 seconds. Keyframes are exported from the rendered video (`python pipeline/storyboard.py`), so they always match the current cut.
 
 ![Contact sheet](contact-sheet.jpg)
 
@@ -64,23 +64,23 @@ Whoever holds the theory can **Map** the world to the program, **Justify** each 
 
 > 🎙 *Whoever holds it can map the program to the world, justify each part, and judge which changes fit.*
 
-### 9. compiler (0:37.7)
+### 9. compiler (0:38.4)
 
 ![compiler](frames/09_compiler.jpg)
 
-Naur's case: Team B inherits a compiler with full code and docs. Their extensions are taped-on patches that break its design.
+Naur's case: Team B inherits a compiler with full code and docs, yet proposes taped-on patches that would break its design. Later maintainers, without Team A, did break it.
 
-> 🎙 *Naur saw a team inherit a compiler, with full code and full docs, and still patch its design apart. The theory didn't travel.*
+> 🎙 *Naur saw successive teams inherit a compiler, with full code and full docs, and still patch its design apart. The theory didn't travel.*
 
-### 10. compiler (0:38.1)
+### 10. compiler (0:38.9)
 
 ![compiler](frames/10_compiler.jpg)
 
 The theory tries to travel to Team B and can't: **code + docs ≠ theory.**
 
-> 🎙 *Naur saw a team inherit a compiler, with full code and full docs, and still patch its design apart. The theory didn't travel.*
+> 🎙 *Naur saw successive teams inherit a compiler, with full code and full docs, and still patch its design apart. The theory didn't travel.*
 
-### 11. compiler (0:42.8)
+### 11. compiler (0:43.5)
 
 ![compiler](frames/11_compiler.jpg)
 
@@ -88,7 +88,7 @@ Team A leaves and the monitor flatlines: *program death*. The program still runs
 
 > 🎙 *And when its holders leave, a program dies, even while it still runs.*
 
-### 12. agents (0:46.8)
+### 12. agents (0:47.6)
 
 ![agents](frames/12_agents.jpg)
 
@@ -96,7 +96,7 @@ Now agents write the code. Text is nearly free: **$0.00**.
 
 > 🎙 *Now agents write the code. Text is nearly free. But for Naur, text was never the expensive part. The theory is.*
 
-### 13. agents (0:50.7)
+### 13. agents (0:51.5)
 
 ![agents](frames/13_agents.jpg)
 
@@ -104,7 +104,7 @@ For Naur, text was never the expensive part. The scale tips toward THEORY.
 
 > 🎙 *Text is nearly free. But for Naur, text was never the expensive part. The theory is. And specifying is how you build it.*
 
-### 14. agents (0:55.4)
+### 14. agents (0:56.2)
 
 ![agents](frames/14_agents.jpg)
 
@@ -112,7 +112,7 @@ Specifying builds the theory. The agent **gets the spec** and **you keep the the
 
 > 🎙 *And specifying is how you build it. The agent gets your spec. You keep the theory.*
 
-### 15. enterprise (1:05.3)
+### 15. enterprise (1:06.0)
 
 ![enterprise](frames/15_enterprise.jpg)
 
@@ -120,7 +120,7 @@ A regulated enterprise: the theory is scattered across a rule buried in policy, 
 
 > 🎙 *In a regulated enterprise, that theory is scattered: a rule buried in policy, a platform quirk one engineer knows, a constraint nobody says out loud.*
 
-### 16. enterprise (1:08.2)
+### 16. enterprise (1:09.0)
 
 ![enterprise](frames/16_enterprise.jpg)
 
@@ -128,7 +128,7 @@ Requirements gathering *is* theory building. The fragments come together in one 
 
 > 🎙 *In a regulated enterprise, that theory is scattered: a rule buried in policy, a platform quirk one engineer knows, a constraint nobody says out loud. Requirements gathering is theory building.*
 
-### 17. takeaways (1:21.0)
+### 17. takeaways (1:21.8)
 
 ![takeaways](frames/17_takeaways.jpg)
 
@@ -136,7 +136,7 @@ Four habits: trace to source (map), write down the why (justify), rehearse chang
 
 > 🎙 *And sit with the people who hold the theory. Keep them in the loop as agents build.*
 
-### 18. close (1:26.6)
+### 18. close (1:27.3)
 
 ![close](frames/18_close.jpg)
 
@@ -144,7 +144,7 @@ Code is the output. The spec is the handoff. **The theory is the product.**
 
 > 🎙 *Code is the output. The spec is the handoff. The theory is the product.*
 
-### 19. end (1:28.7)
+### 19. end (1:29.5)
 
 ![end](frames/19_end.jpg)
 
