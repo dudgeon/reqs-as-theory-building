@@ -1,20 +1,22 @@
 # Engine reference: the SVG motion-graphics kit
 
-Everything visual in the video is drawn by about 1,550 lines of plain JavaScript in `video/`, with no framework and no build step. About 830 lines are the reusable engine, library and renderer; about 720 are this video's scenes. This page is the API reference, plus the recipes the scenes use. For the overall workflow see [`playbook.md`](playbook.md).
+Everything visual is drawn by plain JavaScript, with no framework and no build step. The reusable engine, illustration library and renderer live in `video/` (about 1,000 lines). Each video's choreography lives in `videos/<slug>/`: about 700 lines for the 90 s cut, and seven scene files for the extended cut. This page is the API reference, plus the recipes the scenes use. For the overall workflow see [`playbook.md`](playbook.md).
 
 ## How it runs
 
 ```
-video/index.html   fonts (@font-face, OFL files in video/fonts), paper texture, SVG <defs>, the <g id="root"> stage
-video/timeline.js  generated: window.TIMELINE = { fps, duration, scenes[], lines[], cues{} }
-video/engine.js    maths, easing, SVG builders, text, motion helpers, palette C
-video/shapes.js    illustration library (people, heads, props, icons, the constellation)
-video/scenes.js    SCENES[id] = { render(t, S), sfx(S) }  ← the per-video choreography
-video/main.js      renderFrame(t), collectSfx(), window.ready, and the browser preview player
-video/render.js    Playwright driver: --stills / --frames / --sfx
+video/index.html          fonts (@font-face, OFL files in video/fonts), paper texture, SVG <defs>, the <g id="root"> stage;
+                          loads ?video=<slug>: its timeline.js, then its scene files, then main.js
+video/engine.js           maths, easing, SVG builders, text, motion helpers, palette C, the SCENES registry
+video/shapes.js           illustration library (people, heads, props, icons, the constellation, fact cards…)
+video/main.js             renderFrame(t), chapter chips, collectSfx(), window.ready, and the browser preview player
+video/render.js           Playwright driver: --stills / --frames / --sfx (VIDEO=<slug>, LENIENT=1)
+videos/<slug>/timeline.js generated: window.TIMELINE = { fps, duration, scenes[], lines[], cues{}, chapters[], sceneFiles[] }
+videos/<slug>/scenes.js   SCENES[id] = { render(t, S), sfx(S) }  ← the per-video choreography
+                          (or several files, listed in narration.json "sceneFiles", each wrapped in an IIFE)
 ```
 
-`renderFrame(t)` finds every scene whose window contains `t` (from `S.start − pre` to `S.end + post`), calls `render(t, S)`, wraps each result in a slow camera push (`zoom`, default 2% over the scene, eased), and replaces `#root`'s contents. There is **no state between frames**. Any frame can be rendered alone and in any order, which is what makes parallel rendering and still-based review work.
+`renderFrame(t)` finds every scene whose window contains `t` (from `S.start − pre` to `S.end + post`), calls `render(t, S)`, wraps each result in a slow camera push (`zoom`, default 2% over the scene, eased), adds the chapter chip if a chapter starts nearby, and replaces `#root`'s contents. There is **no state between frames**. Any frame can be rendered alone and in any order, which is what makes parallel rendering and still-based review work.
 
 The canvas is a 1920×1080 SVG with y pointing down. Every illustration draws around its own local origin; you place it with `G({x, y, s, r, o}, …)`.
 
@@ -36,7 +38,7 @@ SCENES.name = {
 | `S.start`, `S.end` | Scene window in absolute seconds. `start` is 0.45 s before the first line; `end` is the next scene's start. |
 | `S.voStart`, `S.voEnd` | First line starts; last line ends |
 | `S.cue(name)` | Absolute time of `{name}` in this scene's lines. Throws if it's missing, which is how typos surface. |
-| `S.line(i)` | The i-th narration line `{ text, start, end, words[] }` |
+| `S.line(i)` | The i-th narration line `{ text, start, end, words[] }` (use `S.line(1).start` to time a beat to the start of a line) |
 | `S.id` | Scene id |
 
 Scene ids come from `narration.json`, plus two implicit ones: `title`, from 0 to the first scene's start (`leadIn − 0.45` s), and `end`, which starts 0.35 s after the last line and lasts `tail` s.
@@ -111,7 +113,8 @@ The glow is a radial gradient (`url(#gGlow)` in `index.html`), not an SVG filter
 | `person(t, o)` | Feet at (0,0), about 255 px tall | `shirt, skin, hair, hairStyle 0–4, pants, mood (neutral, happy, worried, closed, o), arms (down, typing, hold, write, wave, point, shrug, hips, or [[x,y],[x,y]] hand positions), look (-1…1 eye direction), flip, glowHead, seed` (offsets the blink timing) |
 | `bigHead(t, {fill})` | Cranium centre at (0,0), about 400×460 | Profile head facing right; `HEAD_PATH` exported |
 | `makeConstellation(seed, n, {cx, cy, rx, ry, minD, extra})` | | Points in an ellipse, spanning tree plus extra short edges, reveal order grown outward |
-| `constellation(t, K, {t0, dur, size, lineW, glow, color, lineColor, lineO, twinkle, dim, o})` | K's coordinates | Nodes pop in along the tree, edges draw once both ends exist, nodes twinkle |
+| `constellation(t, K, {t0, dur, size, lineW, glow, color, lineColor, lineO, twinkle, dim, o, ghost})` | K's coordinates | Nodes pop in along the tree, edges draw once both ends exist, nodes twinkle. `ghost: true` draws dashed edges and hollow nodes (a lost or partial theory) |
+| `perturbConstellation(K, seed, amt, {drop, add})` | | A copy of K with jittered nodes, some links dropped and a few wrong ones added: a rebuilt theory that differs. Cache it with `once()` |
 | `codeCard({w, h, reveal, seed, title, dark, highlight, lineH})` | Centred | Window with coloured code bars; `reveal` 0…1 types it out |
 | `docCard({w, h, title, lines, reveal, accent, fold, heading, checks, seed})`, `specDoc(o)` | Centred | Page with folded corner; `specDoc` is the coral "SPEC" variant with checkboxes |
 | `shadowCard(x, y, w, h, {rx, fill, stroke})` | Top-left at x, y | Card with a soft drop shadow |
@@ -124,7 +127,16 @@ The glow is a radial gradient (`url(#gGlow)` in `index.html`), not an SVG filter
 | `loopArrows(t, {r, color, spin})`, `badge(n)`, `pill(text)` | Centred | |
 | `checkMark(p)`, `crossMark(p, {size, sw})`, `handArrow(x1, y1, x2, y2, p, {bend, head, color, sw})`, `underline(x, y, w, p)` | | Drawn-on marks |
 
-Scene-local helpers in `scenes.js` that are worth lifting if you reuse them: `sparkle(x, y, r)`, `compilerMachine(t, {patch, patchT, decay})`, `mixColor(a, b, p)` (hex lerp, useful for "decay to grey"), and `HEAD_K()` (the shared head constellation).
+| `theoryBubble(t, {w, h, seed, n, K, t0, dur, ghost, dim, tailX})` | Centred | A night-sky thought bubble with a small constellation: a theory in someone's head |
+| `holder(t, {…person options, bubble, theory, bubbleSide})` | Feet at (0,0) | `person()` plus a `theoryBubble` above the head. `bubble` 0…1 grows it in; `theory` is passed to `theoryBubble` |
+| `factCard({w, claim, rows, status, kind, reveal, sealP})` | Centred, w 620 | A governed fact: claim, then `rows` like `[['SOURCE', '…'], ['OWNER', '…']]`. `status`: `'verified'` (teal bar, pill and seal), `'assumed'` (dashed mustard) or `null` (a decision, gold). `reveal` 0…1 brings in the claim then each row |
+| `factChip({status, sealP, w, h})` | Centred, about 150×96 | A small fact card for ledgers and flows |
+| `seal(p, {r, color, rot})`, `stamp(text, p, {size, color, rot})` | Centred | A scalloped verification seal with a tick; a rubber stamp that slams in (`p` 0…1) |
+| `book({title, w, h, color, size})`, `clock(t, {r, speed})` | Centred | A hardcover (the title shrinks to fit); a wall clock whose hands turn with `t` |
+| `HEAD_K()`, `toGlobal(K, i, hx, hy, hs)` | | The shared head constellation, and a node's page position for a head drawn at (hx, hy) scale hs |
+| `sparkle(x, y, r)`, `compilerMachine(t, {patch, patchT, decay})` | | A four-point star; Naur's compiler (three blocks in a frame, with taped patches and greying decay) |
+
+`mixColor(a, b, p)` in `engine.js` blends two hex colours (useful for "decay to grey").
 
 ## Recipes (all used in the video)
 
@@ -182,17 +194,21 @@ Events come from each scene's `sfx(S)`: `{ t, type, gain = 1, pitch = 1, dur, no
 | `flatline` | Soft monitor tone (`dur`) | Program death |
 | `swing`, `creak` | Light swish plus ding; low creak | Price tag; balance tipping |
 
-The music bed is four chords (D, Bm, G, A-sus) of about 6 s each, sine pads with slow cross-fades, low-passed at 1.8 kHz. It's normalised to −36 dBFS RMS, ducked to 0.55× under speech, and faded in and out. The final loudness is set in `encode.py` (two-pass loudnorm, −16 LUFS, −1.5 dBTP).
+The music bed is sine-pad chords of about 6 s each with slow cross-fades, low-passed at 1.8 kHz: D, Bm, G, A-sus on a loop for a short video, and a different progression per chapter with a soft swell at each chapter start when the timeline has chapters. It's normalised to −36 dBFS RMS, ducked to 0.55× under speech, and faded in and out. The final loudness is set in `encode.py` (two-pass loudnorm, −16 LUFS, −1.5 dBTP).
 
 ## Preview and rendering
 
 ```bash
-python3 -m http.server                             # from the repo root
-# http://localhost:8000/video/index.html           scrubbable player, plays build/mix.wav in sync
-# http://localhost:8000/video/index.html?t=24.3    a single frame
-node video/render.js --stills 24.3,30.5            # build/stills/t_024.30.jpg …
-node video/render.js --frames --workers 4          # build/frames/f_00000.jpg … (JPEG q93)
-node video/render.js --sfx                         # build/sfx.json
+python3 -m http.server                                          # from the repo root
+# http://localhost:8000/video/index.html?video=<slug>           scrubbable player, plays build/<slug>/mix.wav in sync
+# http://localhost:8000/video/index.html?video=<slug>&t=24.3    a single frame
+export VIDEO=<slug>
+node video/render.js --stills 24.3,30.5            # build/<slug>/stills/t_024.30.jpg …
+node video/render.js --frames --workers 4          # build/<slug>/frames/f_00000.jpg … (JPEG q93)
+node video/render.js --sfx                         # build/<slug>/sfx.json
+LENIENT=1 node video/render.js --stills 24.3       # a scene that throws is logged and skipped (reviewing unfinished work)
 ```
+
+**Chapters.** Give a scene `"chapter": "Title"` in `narration.json` and the timeline lists it under `chapters` (number, title, start). `main.js` draws a chip at the top left, x 78–620 and y 38–88, from `start + 0.3` to `start + 4.8`, outside the camera push; keep that corner of chapter-opening scenes empty for those seconds.
 
 Performance: about 32 frames per second on 4 vCPUs. Keep a frame under about 2,000 elements, use gradients instead of filters, and cache expensive geometry with `once()`.

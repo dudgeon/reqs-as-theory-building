@@ -148,35 +148,69 @@ def sfx(ev):
 
 
 # ---------------------------------------------------------------- music bed
-def music_bed(total):
+CHORDS = {  # semitones relative to D4, bass first (D major and its relatives)
+    "D": [-12, 0, 4, 7, 11, 16],       # Dmaj9-ish
+    "Bm": [-15, -3, 2, 6, 9, 14],      # Bm11
+    "G": [-17, -5, 2, 7, 11, 14],      # Gmaj7
+    "Asus": [-19, -7, 2, 4, 9, 14],    # A sus
+    "Em": [-22, -10, -3, 5, 9, 12],    # Em7
+    "F#m": [-20, -8, -1, 2, 7, 11],    # F#m7
+}
+# A short video loops the first progression. A chaptered one gives each chapter its own,
+# and returns to the first for the last chapter.
+PROGRESSIONS = [
+    ["D", "Bm", "G", "Asus"],
+    ["Bm", "G", "D", "Asus"],
+    ["G", "D", "Asus", "Bm"],
+    ["D", "F#m", "G", "Asus"],
+    ["Em", "Asus", "D", "Bm"],
+    ["G", "Asus", "Bm", "D"],
+]
+
+
+def pad(L, R, t, ch, a, b, gain=1.0, shift=0, voices=None):
+    """Add chord `ch` from time a to b (seconds, with 2.2 s sine-squared fades) to the L/R buffers."""
+    i0, i1 = max(0, int(a * SR)), min(len(L), int(b * SR))
+    if i1 <= i0:
+        return
+    tt = t[i0:i1]
+    e = np.clip((tt - a) / 2.2, 0, 1) * np.clip((b - tt) / 2.2, 0, 1)
+    e = np.sin(e * np.pi / 2) ** 2 * gain
+    for j, s in enumerate(ch):
+        if voices is not None and j not in voices:
+            continue
+        f = hz(s + shift)
+        amp = (0.5 if j == 0 else 0.26) / (1 + 0.15 * j)
+        for side, cents, ph in ((L, -4, 0.0), (R, 4, 1.3)):
+            ff = f * 2 ** (cents / 1200)
+            wob = 1 + 0.002 * np.sin(2 * np.pi * 0.13 * tt + ph + j)
+            side[i0:i1] += amp * e * (np.sin(2 * np.pi * ff * wob * tt + ph + j) + 0.12 * np.sin(4 * np.pi * ff * tt + ph))
+
+
+def music_bed(total, chapters=()):
     n = int(total * SR)
     L, R = np.zeros(n), np.zeros(n)
-    chords = [  # semitones relative to D4 (D major: I, vi, IV, V-sus)
-        [-12, 0, 4, 7, 11, 16],      # Dmaj9-ish
-        [-15, -3, 2, 6, 9, 14],      # Bm11
-        [-17, -5, 2, 7, 11, 14],     # Gmaj7
-        [-19, -7, 2, 4, 9, 14],      # A sus
-    ]
-    seg = 6.0
     t = np.arange(n) / SR
-    k = 0
-    start = 0.0
-    while start < total:
-        ch = chords[k % len(chords)]
-        a, b = start - 1.5, start + seg + 1.5  # overlap for cross-fades
-        i0, i1 = max(0, int(a * SR)), min(n, int(b * SR))
-        tt = t[i0:i1]
-        e = np.clip((tt - a) / 2.2, 0, 1) * np.clip((b - tt) / 2.2, 0, 1)
-        e = np.sin(e * np.pi / 2) ** 2
-        for j, s in enumerate(ch):
-            f = hz(s)
-            amp = (0.5 if j == 0 else 0.26) / (1 + 0.15 * j)
-            for side, cents, ph in ((L, -4, 0.0), (R, 4, 1.3)):
-                ff = f * 2 ** (cents / 1200)
-                wob = 1 + 0.002 * np.sin(2 * np.pi * 0.13 * tt + ph + j)
-                side[i0:i1] += amp * e * (np.sin(2 * np.pi * ff * wob * tt + ph + j) + 0.12 * np.sin(4 * np.pi * ff * tt + ph))
-        start += seg
-        k += 1
+    seg = 6.0
+    bounds = [0.0] + [c["start"] for c in chapters] + [total]
+    for si in range(len(bounds) - 1):
+        s0, s1 = bounds[si], bounds[si + 1]
+        last = si == len(bounds) - 2
+        prog = PROGRESSIONS[0 if (si == 0 or (last and chapters)) else 1 + (si - 1) % (len(PROGRESSIONS) - 1)]
+        start, k = s0, 0
+        while start < (s1 - 0.5 if chapters else s1):
+            end = min(start + seg, s1) if chapters else start + seg  # without chapters: the original loop, unchanged
+            pad(L, R, t, CHORDS[prog[k % len(prog)]], start - 1.5, end + 1.5)  # overlap for cross-fades
+            start, k = end, k + 1
+        if si > 0:  # a soft swell of the new chapter's first chord, an octave up, as the chapter opens
+            ch = CHORDS[prog[0]]
+            i0, i1 = int(max(0, s0 - 1.2) * SR), min(n, int((s0 + 5.0) * SR))
+            tt = t[i0:i1] - s0
+            env = np.where(tt < 0.4, np.sin(np.clip((tt + 1.2) / 1.6, 0, 1) * np.pi / 2) ** 2, np.exp(-(tt - 0.4) / 1.6))
+            for j in (3, 4, 5):
+                f = hz(ch[j] + 12)
+                L[i0:i1] += 0.09 * env * np.sin(2 * np.pi * f * 0.999 * tt)
+                R[i0:i1] += 0.09 * env * np.sin(2 * np.pi * f * 1.001 * tt + 0.7)
     # gentle movement: slow tremolo + low-pass
     sos = butter(2, 1800, btype="low", fs=SR, output="sos")
     L, R = sosfilt(sos, L), sosfilt(sos, R)
@@ -195,7 +229,7 @@ def main():
         vo[i:i + len(a)] += a[: n - i]
 
     # music: -20 dB-ish under the voice, ducked further while someone is speaking
-    mus = music_bed(total)
+    mus = music_bed(total, tl.get("chapters", []))
     mus *= 10 ** (-36 / 20) / (np.sqrt((mus ** 2).mean()) + 1e-12)  # bed sits ~15 LU under the voice
     act = np.convolve(np.abs(vo), np.ones(int(0.05 * SR)) / int(0.05 * SR), mode="same") > 0.01
     duck = np.where(act, 0.55, 1.0)
@@ -225,7 +259,7 @@ def main():
     write_wav(BUILD / "vo_only.wav", vo.astype(np.float32))
     rms = lambda x: 20 * np.log10(np.sqrt((x ** 2).mean()) + 1e-12)
     print(f"mix {total:.2f}s  vo {rms(vo):.1f} dBFS  music {rms(mus):.1f} dBFS  sfx {rms(fx):.1f} dBFS  "
-          f"({len(events)} sfx) -> build/mix.wav")
+          f"({len(events)} sfx) -> {(BUILD / 'mix.wav').relative_to(ROOT)}")
 
 
 if __name__ == "__main__":

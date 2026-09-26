@@ -2,7 +2,7 @@
 
 **Runtime:** about 90 s, 234 narrated words (1080p, 30 fps)
 **Source text:** Peter Naur, "Programming as Theory Building," *Microprocessing and Microprogramming* 15 (1985): 253–261. It was first given as the keynote at Euromicro 84.
-**Narration source of truth:** [`pipeline/narration.json`](../pipeline/narration.json). The `{cue}` markers there drive the animation timing.
+**Narration source of truth:** [`narration.json`](narration.json). The `{cue}` markers there drive the animation timing.
 
 ---
 
@@ -21,7 +21,7 @@
 | 8 | 1:22 | Close | **Code** is the output. **The spec** is the handoff. **The theory** is the product. | A three-tier stack builds upward: code, then spec, then theory, which glows. |
 | 9 | 1:27 | End card | *(music)* | **Specs as Theory Building**, with the citation and voice credit. |
 
-Word-level timings come from aligning the synthesized voice (see `build/timeline.json` after a build), so the visual beats land on the words in bold whichever voice is used.
+Word-level timings come from aligning the synthesized voice (see `build/specs-as-theory-building/timeline.json` after a build), so the visual beats land on the words in bold whichever voice is used.
 
 ---
 

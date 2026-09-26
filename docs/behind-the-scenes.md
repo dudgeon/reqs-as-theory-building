@@ -26,13 +26,13 @@ This is the retrospective for how the video in this repo was made. It covers the
 
 ```mermaid
 flowchart LR
-  N["pipeline/narration.json<br/>script + cue markers"] --> TTS["tts.py<br/>one TTS call per line<br/>(OpenRouter or Kokoro)"]
+  N["videos/…/narration.json<br/>script + cue markers"] --> TTS["tts.py<br/>one TTS call per line<br/>(OpenRouter or Kokoro)"]
   TTS --> AL["align.py<br/>Whisper word timestamps"]
   AL --> TL["timeline.py<br/>scene windows, cue times,<br/>captions"]
-  TL --> JS["video/timeline.js"]
-  JS --> SC["video/scenes.js<br/>render(t, S) per scene"]
+  TL --> JS["videos/…/timeline.js"]
+  JS --> SC["videos/…/scenes.js<br/>render(t, S) per scene"]
   SC --> R["render.js<br/>headless Chromium,<br/>4 workers → 2,736 JPEGs"]
-  SC --> SFX["render.js --sfx<br/>→ build/sfx.json"]
+  SC --> SFX["render.js --sfx<br/>→ build/…/sfx.json"]
   SFX --> MIX["mix.py<br/>VO + music + SFX"]
   TTS --> MIX
   R --> ENC["encode.py<br/>x264 + AAC + loudnorm<br/>+ soft subs"]
@@ -43,7 +43,7 @@ flowchart LR
 
 ### The decisions that mattered
 
-1. **One source of truth for words and timing.** `pipeline/narration.json` holds every spoken line. A `{cue}` marker goes in front of any word the animation should react to, for example `"Whoever holds it can {map}map the program to the world"`. Scenes never hard-code a time; they ask for `S.cue('map')`. Changing a word, a pause or the voice re-times the whole video automatically.
+1. **One source of truth for words and timing.** `videos/<slug>/narration.json` holds every spoken line. A `{cue}` marker goes in front of any word the animation should react to, for example `"Whoever holds it can {map}map the program to the world"`. Scenes never hard-code a time; they ask for `S.cue('map')`. Changing a word, a pause or the voice re-times the whole video automatically.
 2. **One TTS call per line, cached by content hash.** Sentence-sized calls keep prosody natural, allow per-line pauses (`pauseAfter`), and mean only edited lines are re-synthesized. The final fidelity fix re-voiced one line in a few seconds.
 3. **Forced alignment instead of trusting the TTS.** Hosted TTS endpoints return audio without timestamps. `align.py` runs Whisper (`small.en` via faster-whisper, CPU, int8) with `word_timestamps=True`, then maps the recognized words back onto the script words with `difflib`, interpolating any misses. This makes the timing independent of the voice. As a bonus, if Whisper hears every scripted word, the voice is intelligible. That was the only "listening" test available.
 4. **An immediate-mode SVG engine: every frame is a pure function of `t`.** `renderFrame(t)` rebuilds the whole SVG string from scratch. There is no animation state. That gives three properties that proved essential:
@@ -119,7 +119,7 @@ Each fix is already in the kit. The last column says where, so the next run won'
 | 12 | "Requirements gathering" head looked messy | Fragment edges stretched across the head while gathering, then overlapped the head's own web | Fade fragment edges while gathering, cross-fade to the head's own web, gather faster so the result holds for about 1 s | Pattern in `engine.md` (moving constellations) |
 | 13 | Two storyboard keyframes were nearly blank | Beat times fell inside exit fades. Tiny 8 KB JPEGs gave it away. | Clamp beat time to `scene.end − 0.4` | `storyboard.py` `beats()` |
 | 14 | Contact sheets showed only 4 of 16 tiles | `xstack` layout expressions like `w0*2` are invalid | Explicit pixel offsets | `tools/review.py` |
-| 15 | Artifact publish refused `captions.vtt` | The host doesn't serve `text/vtt` | Captions embedded as JSON: blob-URL `<track>` with a scripted overlay fallback, plus a toggle | `publish/template.html` |
+| 15 | Artifact publish refused `captions.vtt` | The host doesn't serve `text/vtt` | Captions embedded as JSON: blob-URL `<track>` with a scripted overlay fallback, plus a toggle | `videos/<slug>/page.html` |
 | 16 | Page script syntax error | Python f-string templating turned `'\n'` inside JS into a real newline | Caught with `node --check`; the page is now a plain HTML template with `{{PLACEHOLDERS}}` | `publish/page.py` |
 | 17 | Fidelity: "Naur saw **a team** inherit a compiler … and still patch its design apart" | Merged two stages of Naur's case. Group B only *proposed* the patches (group A caught them); later maintainers actually patched it apart. | Changed to "successive teams"; one line re-voiced; full rebuild | Playbook phase 2: line-by-line fact-check before TTS |
 | 18 | Runtime 91.2 s against a 60–90 s ask | 234 words at 184 wpm, plus pauses and title and end cards | Accepted as "about 90 s" | Word-budget formula in the playbook |
@@ -136,7 +136,7 @@ Each fix is already in the kit. The last column says where, so the next run won'
 4. **Budget words to the voice.** Kokoro `af_heart` runs about 184 wpm; hosted voices tend to be slower. See the formula in the playbook.
 5. **Use the crossfade conventions from the first scene** instead of retrofitting them.
 6. **Review with `tools/review.py cues` after each scene**, and with `transitions` after each full render.
-7. **Treat the page as a template from the start.** It's now `publish/template.html`.
+7. **Treat the page as a template from the start.** It's now `videos/<slug>/page.html`, one per video.
 
 ## Open items for this video
 
@@ -153,6 +153,6 @@ Each fix is already in the kit. The last column says where, so the next run won'
 | `tts.py` (Kokoro, 20 lines) | ~30 s cold | Cached lines are skipped |
 | `align.py` | ~35 s | Whisper small.en, int8 |
 | `timeline.py`, `render.js --sfx`, `mix.py` | ~10 s | |
-| `render.js --frames` | ~85 s | 2,736 frames, 4 workers, 732 MB of JPEGs in `build/frames` |
+| `render.js --frames` | ~85 s | 2,736 frames, 4 workers, 732 MB of JPEGs in `build/<slug>/frames` |
 | `encode.py` | ~60 s | x264 `-preset slow -crf 18 -tune animation`, two-pass loudnorm |
 | `storyboard.py`, `publish/page.py` | ~30 s | The web encode is CRF 24, 9.4 MB |

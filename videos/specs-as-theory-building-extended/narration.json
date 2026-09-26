@@ -1,0 +1,357 @@
+{
+  "title": "Specs as Theory Building: Extended Cut",
+  "slug": "specs-as-theory-building-extended",
+  "fps": 30,
+  "leadIn": 4.2,
+  "tail": 4.0,
+  "lineGap": 0.32,
+  "sceneGap": 0.6,
+  "sceneFiles": [
+    "scenes/a-opening.js",
+    "scenes/b-cases.js",
+    "scenes/c-theory.js",
+    "scenes/d-change.js",
+    "scenes/e-method-agents.js",
+    "scenes/f-loops.js",
+    "scenes/g-close.js"
+  ],
+  "pronounce": {
+    "Naur": {
+      "kokoro": "[Naur](/nˈaʊɚ/)",
+      "respell": "Now-er"
+    },
+    "Naur's": {
+      "kokoro": "[Naur's](/nˈaʊɚz/)",
+      "respell": "Now-er's"
+    },
+    "Ryle": {
+      "kokoro": "[Ryle](/ɹˈaɪl/)",
+      "respell": "Rile"
+    }
+  },
+  "scenes": [
+    {
+      "id": "hook",
+      "lines": [
+        {
+          "text": "What does a software team {q}actually produce? {code}Code, surely. {pile}Piles of it."
+        },
+        {
+          "text": "In 1985, Peter Naur's {ans}answer was {notcode}not the code.",
+          "pauseAfter": 0.5
+        }
+      ]
+    },
+    {
+      "id": "naur",
+      "label": "Who Naur was",
+      "lines": [
+        {
+          "text": "Naur {algol}edited the ALGOL 60 report, {bnf}is the N in BNF, and {turing}won the Turing Award."
+        },
+        {
+          "text": "His essay, {essay}Programming as Theory Building, {slow}rewards a slower look.",
+          "pauseAfter": 0.6
+        }
+      ]
+    },
+    {
+      "id": "views",
+      "chapter": "What programming is",
+      "label": "Two views",
+      "lines": [
+        {
+          "text": "He contrasts two views. In the {prod}production view, programming {texts}produces a program and some other texts."
+        },
+        {
+          "text": "In the {tbv}theory building view, programmers {insight}form an insight, a theory, of the matters at hand. {second}The texts are secondary."
+        }
+      ]
+    },
+    {
+      "id": "matching",
+      "label": "Matching the world",
+      "lines": [
+        {
+          "text": "Programming, for Naur, is {matching}matching part of a real-world activity to {symbols}what a computer can do with symbols."
+        },
+        {
+          "text": "And since {changes}the world keeps changing, it {mods}includes modifying the program to keep up.",
+          "pauseAfter": 0.6
+        }
+      ]
+    },
+    {
+      "id": "compiler",
+      "chapter": "Evidence from the field",
+      "label": "Case 1: the compiler",
+      "lines": [
+        {
+          "text": "{handover}A team extended another group's compiler, with {docs}full documentation, annotated code, and {advice}advice from its authors."
+        },
+        {
+          "text": "Still, several of their proposals were {patches}patches that would have {destroyed}destroyed its power and simplicity. {spotted}The authors saw it instantly."
+        },
+        {
+          "text": "Ten years on, without them, {visible}the structure was still visible, but {amorphous}made ineffective by amorphous additions.",
+          "pauseAfter": 0.5
+        }
+      ]
+    },
+    {
+      "id": "monitor",
+      "label": "Case 2: the monitoring system",
+      "lines": [
+        {
+          "text": "Second case: {system}a two-hundred-thousand-line monitoring system. {veterans}The programmers who'd been there since its design {fromknow}fixed faults from what they knew and the annotated code, and {nodocs}couldn't imagine any further documentation that would help."
+        },
+        {
+          "text": "Teams {manuals}with full manuals {stuck}kept getting stuck on problems {easy}the veterans cleared up easily.",
+          "pauseAfter": 0.6
+        }
+      ]
+    },
+    {
+      "id": "ryle",
+      "chapter": "What a theory is",
+      "label": "Ryle",
+      "lines": [
+        {
+          "text": "For the kind of knowledge, Naur turns to the philosopher {ryle}Gilbert Ryle."
+        },
+        {
+          "text": "Intelligent behavior, like {joke}telling jokes or {fish}fishing, means {well}doing things well and {lapses}catching your own lapses."
+        },
+        {
+          "text": "It {rules}isn't rule-following, or you'd need {rules2}rules for applying the rules, {regress}and so on forever."
+        },
+        {
+          "text": "Having a theory goes further: you can {explain}explain what you do, {answer}answer questions, and {argue}argue about it."
+        }
+      ]
+    },
+    {
+      "id": "newton",
+      "label": "Newton and similarity",
+      "lines": [
+        {
+          "text": "A theory isn't just its laws. {newton}Having Newton's theory means seeing how it applies to {pendulum}pendulums and {planets}planets, and {similar}recognizing similar cases."
+        },
+        {
+          "text": "That kind of similarity {norules}can't be put into rules, any more than the likeness of {faces}faces or {tunes}tunes. {cantwrite}So a theory can't be fully written down.",
+          "pauseAfter": 0.6
+        }
+      ]
+    },
+    {
+      "id": "abilities",
+      "chapter": "What the theory makes possible",
+      "label": "Three abilities",
+      "lines": [
+        {
+          "text": "A program's theory is {howhandled}how certain affairs of the world will be handled by it. Its holder can do {three}three things no document can."
+        },
+        {
+          "text": "{map}Explain how each part maps to the world, {relevant}including which parts of the world matter at all."
+        },
+        {
+          "text": "{justify}Justify why each part is as it is. And {adapt}meet a request for change by seeing {similarity}how it resembles what's already there.",
+          "pauseAfter": 0.6
+        }
+      ]
+    },
+    {
+      "id": "cost",
+      "chapter": "Change and decay",
+      "label": "The cost of change",
+      "lines": [
+        {
+          "text": "We expect change to be cheap because {text}a program is text, and text is easy to edit. Naur calls that argument {false}false: {notcost}text was never the main cost."
+        },
+        {
+          "text": "Altering {building}a building can cost more than {rebuild}rebuilding it. And {flex}built-in flexibility {futures}costs money now, for needs that may never come."
+        }
+      ]
+    },
+    {
+      "id": "decay",
+      "label": "How programs decay",
+      "lines": [
+        {
+          "text": "Any change can be made {manyways}many ways, all correct. Some {natural}extend the theory. {patches2}Others are patches. {onlyholder}Only someone with the theory can tell which. That's {decay}how programs decay."
+        },
+        {
+          "text": "Even {quality}simplicity and good structure only make sense {possible}against the programs that could have been written instead.",
+          "pauseAfter": 0.6
+        }
+      ]
+    },
+    {
+      "id": "life",
+      "chapter": "Life, death and revival",
+      "label": "Program life and death",
+      "lines": [
+        {
+          "text": "So a program is {alive}alive while a team holding its theory {control}controls its changes."
+        },
+        {
+          "text": "It {dies}dies when that team {dissolves}dissolves, even if it {runs}keeps running. {visibledeath}The death shows when requests for change can't be answered intelligently."
+        }
+      ]
+    },
+    {
+      "id": "revival",
+      "label": "Revival",
+      "lines": [
+        {
+          "text": "{revive}Rebuilding the theory from code and documents alone is, Naur says, {impossible}strictly impossible. He'd rather {afresh}a new team solved the problem afresh."
+        },
+        {
+          "text": "A theory is passed on the way {instrument}music is taught: by {alongside}working closely with people who have it.",
+          "pauseAfter": 0.6
+        }
+      ]
+    },
+    {
+      "id": "method",
+      "chapter": "Method and the programmer",
+      "label": "No right method",
+      "lines": [
+        {
+          "text": "Can a {method}method stand in for it? A method is {workrules}a set of work rules: steps, order, notations, documents."
+        },
+        {
+          "text": "But a theory has {noorder}no inherent parts or order. So {noright}there is no right method, though methods {educate}help as education."
+        }
+      ]
+    },
+    {
+      "id": "status",
+      "label": "The programmer's standing",
+      "lines": [
+        {
+          "text": "And programmers aren't {components}replaceable parts on a production line. They're {responsible}responsible, permanent developers of the activity the computer is part of, with {standing}the standing of engineers and lawyers.",
+          "pauseAfter": 0.6
+        }
+      ]
+    },
+    {
+      "id": "agents",
+      "chapter": "Specs, in the age of agents",
+      "label": "Agents",
+      "lines": [
+        {
+          "text": "Now {agents}agents write the code, and text {free}really is nearly free. On Naur's argument, the cost {moved}hasn't gone. It has moved {tospec}to specifying."
+        },
+        {
+          "text": "An agent {dropped}dropped into a codebase with only code and documents is attempting {revival}what Naur called revival. {differs}Its picture of the system can differ from the original."
+        },
+        {
+          "text": "So the spec is {handoff}the handoff, and writing it is {tbuild}where the theory gets built. The agent {getsspec}gets the spec. {keep}You keep the theory."
+        }
+      ]
+    },
+    {
+      "id": "enterprise",
+      "label": "The regulated enterprise",
+      "lines": [
+        {
+          "text": "In a {reg}regulated enterprise, that theory is {scattered}scattered: {rule}a rule buried in policy, {quirk}a platform quirk one engineer knows, {unsaid}a constraint nobody says out loud."
+        },
+        {
+          "text": "{rgtb}Requirements gathering is theory building.",
+          "pauseAfter": 0.6
+        }
+      ]
+    },
+    {
+      "id": "scratch",
+      "chapter": "Loops that compound",
+      "label": "Starting from scratch",
+      "lines": [
+        {
+          "text": "But if each spec starts {scratch}from scratch, each team {again}rediscovers the same rules, quirks and owners. {longer}Longer documents won't fix that. {loopword}A loop will."
+        }
+      ]
+    },
+    {
+      "id": "loop",
+      "label": "The loop",
+      "lines": [
+        {
+          "text": "Each piece of product shaping runs a loop: {discover}discover what's true, {verify}verify it with the people who own it, {specify}specify, {build}build with agents, and {learn}learn from what building reveals."
+        },
+        {
+          "text": "Then it {writeback}writes back what it learned, as {governed}governed facts."
+        }
+      ]
+    },
+    {
+      "id": "governed",
+      "label": "A governed fact",
+      "lines": [
+        {
+          "text": "A governed fact {source}cites its source, {owner}names an owner who vouches for it, {dated}carries a date, and says whether it's {verified}verified or {assumed}still assumed. {decision}Decisions keep their reasons."
+        }
+      ]
+    },
+    {
+      "id": "compound",
+      "label": "Loops that compound",
+      "lines": [
+        {
+          "text": "The next loop {startsfrom}starts from those facts. {adjacent}An adjacent feature inherits most of them. {orthogonal}An unrelated one still reuses {shared}the rules, platforms and people they share."
+        },
+        {
+          "text": "Each loop has {fewer}fewer unknowns to resolve, so it {faster}moves faster, and {judgment}what's left is the work that needs judgment."
+        },
+        {
+          "text": "And when a rule changes, {impact}you can see every spec that relied on it."
+        }
+      ]
+    },
+    {
+      "id": "naurloop",
+      "label": "With Naur, not around him",
+      "lines": [
+        {
+          "text": "This works with Naur, not around him. {factsnot}Facts aren't the theory, {builton}but they're what it's built on."
+        },
+        {
+          "text": "And the loop keeps {inloop}the people who hold the theory in it, verifying and deciding. {alivelong}That's what keeps a product alive.",
+          "pauseAfter": 0.6
+        }
+      ]
+    },
+    {
+      "id": "takeaways",
+      "chapter": "Takeaways",
+      "lines": [
+        {
+          "text": "So: {t1}trace every requirement to a governed fact."
+        },
+        {
+          "text": "{t2}Write down the why, and what you rejected."
+        },
+        {
+          "text": "{t3}Rehearse change: does a new rule fit, or need a patch?"
+        },
+        {
+          "text": "{t4}Close each loop by writing back what you learned."
+        },
+        {
+          "text": "And {t5}keep the theory's holders in the loop as agents build.",
+          "pauseAfter": 0.7
+        }
+      ]
+    },
+    {
+      "id": "close",
+      "lines": [
+        {
+          "text": "{c1}Code is the output. {c2}The spec is the handoff. {c3}Governed facts are the memory. {c4}The theory is the product."
+        }
+      ]
+    }
+  ]
+}
